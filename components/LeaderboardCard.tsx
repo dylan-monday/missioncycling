@@ -75,25 +75,34 @@ function getJerseyForRank(rank: number, claimed: boolean): string | null {
 export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardCardProps) {
   const [phase, setPhase] = useState<'hero' | 'full'>('hero');
   const [visibleRows, setVisibleRows] = useState(0);
+  const [animationStarted, setAnimationStarted] = useState(false);
   const leaderTime = segment.mission_cycling_leaderboard[0]?.time;
 
   useEffect(() => {
     if (!isOpen) {
       setPhase('hero');
       setVisibleRows(0);
+      setAnimationStarted(false);
       return;
     }
 
     setPhase('hero');
     setVisibleRows(0);
+    setAnimationStarted(false);
 
     // Timeline:
-    // 0-0.6s: Card opens
+    // 0-0.6s: Card opens (wait for card to be visible)
+    // 0.6s: Animation starts
     // 0.8s: First place slams in
     // 1.6s: Second place slams in
     // 2.4s: Third place slams in
     // 5.5s: Top 3 shrink into full leaderboard
     // 6.3s+: Rows 4-10 appear sequentially (after 800ms pause)
+
+    // Wait for card to open before starting leaderboard animations
+    const startTimer = setTimeout(() => {
+      setAnimationStarted(true);
+    }, 600); // Wait for card open animation
 
     const fullTimer = setTimeout(() => {
       setPhase('full');
@@ -106,6 +115,7 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
     }, 5500);
 
     return () => {
+      clearTimeout(startTimer);
       clearTimeout(fullTimer);
     };
   }, [segment.id, isOpen]);
@@ -132,10 +142,11 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
           const isTopThree = entry.rank <= 3;
 
           // Determine if this row should be visible
-          const shouldShow = isTopThree || (!isHero && visibleRows >= entry.rank);
+          // Only show after animation has started (card is open)
+          const shouldShow = animationStarted && (isTopThree || (!isHero && visibleRows >= entry.rank));
 
-          // Animation delay for top 3 slam-in
-          const slamDelay = isTopThree ? 0.8 + (index * 0.8) : 0;
+          // Animation delay for top 3 slam-in (relative to animationStarted)
+          const slamDelay = isTopThree ? 0.2 + (index * 0.8) : 0;
 
           return (
             <motion.div
