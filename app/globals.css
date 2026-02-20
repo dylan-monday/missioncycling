@@ -212,13 +212,13 @@ body {
   overflow: hidden;
 }
 
-/* Shadow border separator - 80% of card height, centered vertically */
+/* Shadow border separator - full height of card */
 .card-left::after {
   content: '';
   position: absolute;
   right: 0;
-  top: 10%;
-  height: 80%;
+  top: 0;
+  height: 100%;
   width: 40px;
   background: url('/shadow border.png') center center/100% 100% no-repeat;
   opacity: 0.4;
