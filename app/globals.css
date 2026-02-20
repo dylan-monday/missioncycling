@@ -274,17 +274,17 @@ body {
 /* Stats - anchored to bottom */
 .segment-stats {
   width: 100%;
-  max-width: 220px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
   flex-shrink: 0;
 }
 
 .stat-row {
   display: flex;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: center;
+  gap: 4px;
   align-items: center;
   font-family: 'tablet-gothic', 'Inter', sans-serif;
   font-size: 14px;
