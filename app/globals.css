@@ -229,15 +229,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   height: 100%;
   width: 100%;
 }
 
 /* Logo - anchored to top */
 .logo {
-  width: 180px;
-  height: 240px;
+  width: 150px;
+  height: 200px;
   flex-shrink: 0;
 }
 
