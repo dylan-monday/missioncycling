@@ -31,10 +31,11 @@ app/
   layout.tsx        # Root layout with Typekit fonts
 
 components/
-  SplashScreen.tsx  # Click-to-start intro screen
-  LeaderboardCard.tsx  # Main segment display card
+  SplashScreen.tsx     # Click-to-start intro screen
+  LeaderboardCard.tsx  # Main segment display (preview + leaderboard phases)
+  ElevationProfile.tsx # Animated SVG elevation chart (preview phase)
   LeaderboardRow.tsx   # Animated leaderboard rows
-  Ticker.tsx        # Bottom scrolling ticker with sponsors
+  Ticker.tsx           # Bottom scrolling ticker with sponsors
 
 data/
   segments.json     # All segment + leaderboard data (8 segments)
@@ -56,7 +57,10 @@ public/
 - **Video Background:** Crossfades between segment-specific videos
 - **Card:** Opens from center with animated frame edges
 - **Left Panel:** Logo, segment name, stats (distance, elevation, grade)
-- **Right Panel:** Animated leaderboard (top 3 hero → full 10 rows)
+- **Right Panel:** Three-phase animation sequence:
+  1. **Preview Phase (6s):** Animated elevation profile SVG draws in, stats fade in
+  2. **Hero Phase:** Top 3 slam in large with spinning jerseys
+  3. **Full Phase:** Shrinks to full 10-row leaderboard with gaps and dates
 - **Auto-advance:** 38 seconds per segment, or click frame edges to navigate
 
 ### 3. Ticker
@@ -129,16 +133,24 @@ All custom styles in `globals.css`:
 - `.card`, `.card-left`, `.card-right` - Main card layout
 - `.frame-edge` - Clickable navigation arrows
 - `.leaderboard`, `.leaderboard-row` - Leaderboard grid
+- `.elevation-profile`, `.elevation-path` - SVG elevation chart
+- `.elevation-stats` - Stats grid below elevation chart
 - `.ticker`, `.ticker-scroll` - Bottom ticker
 
 ## Animation Timing
 
 ```
-LEADERBOARD_ANIMATION = 8000ms   # Time for leaderboard to fully appear
-VIEWING_DURATION = 30000ms       # 30s viewing complete leaderboard
-SEGMENT_DURATION = 38000ms       # Total time per segment
-CLOSE_DURATION = 600ms           # Card close animation
 INITIAL_DELAY = 800ms            # Delay before card opens
+CLOSE_DURATION = 600ms           # Card close animation
+SEGMENT_DURATION = 38000ms       # Total time per segment
+VIEWING_DURATION = 30000ms       # 30s viewing complete leaderboard
+
+# LeaderboardCard internal timeline:
+0-600ms     Card opens
+600ms       Preview phase starts (elevation profile draws)
+2600ms      Stats animate in
+6600ms      Transition to hero phase (top 3 slam in)
+12000ms     Transition to full leaderboard (rows 4-10 appear)
 ```
 
 ## Brand Colors
@@ -180,7 +192,6 @@ Add MP3 to `/public/` and update `AUDIO_TRACKS` array in `page.tsx`
 
 ## Known Issues
 
-- TypeScript warning in `LeaderboardRow.tsx` (Framer Motion transition type) - doesn't affect runtime
 - Videos must be web-compressed (<100MB) for GitHub
 
 ## Future Work
