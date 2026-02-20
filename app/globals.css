@@ -284,7 +284,7 @@ body {
 .stat-row {
   display: flex;
   justify-content: center;
-  gap: 4px;
+  gap: 50px;
   align-items: center;
   font-family: 'tablet-gothic', 'Inter', sans-serif;
   font-size: 14px;
@@ -293,11 +293,15 @@ body {
 .stat-label {
   color: var(--text-secondary);
   font-weight: 400;
+  width: 70px;
+  text-align: right;
 }
 
 .stat-value {
   color: var(--text-primary);
   font-weight: 600;
+  width: 60px;
+  text-align: left;
 }
 
 /* ===== RIGHT PANEL (LEADERBOARD) ===== */
