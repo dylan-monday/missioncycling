@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import ElevationProfile from './ElevationProfile';
 
 interface LeaderboardEntry {
   rank: number;
@@ -73,37 +74,54 @@ function getJerseyForRank(rank: number, claimed: boolean): string | null {
 }
 
 export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardCardProps) {
-  const [phase, setPhase] = useState<'hero' | 'full'>('hero');
+  const [phase, setPhase] = useState<'preview' | 'hero' | 'full'>('preview');
   const [visibleRows, setVisibleRows] = useState(0);
-  const [animationStarted, setAnimationStarted] = useState(false);
+  const [previewStarted, setPreviewStarted] = useState(false);
+  const [leaderboardStarted, setLeaderboardStarted] = useState(false);
   const leaderTime = segment.mission_cycling_leaderboard[0]?.time;
 
   useEffect(() => {
     if (!isOpen) {
-      setPhase('hero');
+      setPhase('preview');
       setVisibleRows(0);
-      setAnimationStarted(false);
+      setPreviewStarted(false);
+      setLeaderboardStarted(false);
       return;
     }
 
-    setPhase('hero');
+    setPhase('preview');
     setVisibleRows(0);
-    setAnimationStarted(false);
+    setPreviewStarted(false);
+    setLeaderboardStarted(false);
 
     // Timeline:
-    // 0-0.6s: Card opens (wait for card to be visible)
-    // 0.6s: Animation starts
-    // 0.8s: First place slams in
-    // 1.6s: Second place slams in
-    // 2.4s: Third place slams in
-    // 5.5s: Top 3 shrink into full leaderboard
-    // 6.3s+: Rows 4-10 appear sequentially (after 800ms pause)
+    // 0-0.6s: Card opens
+    // 0.6s: Preview phase starts (elevation profile draws in 2s)
+    // 2.6s: Stats animate in (0.6s)
+    // 3.2s-6.6s: Hold preview for ~3.4s more
+    // 6.6s: Transition to hero phase
+    // 6.8s: First place slams in
+    // 7.6s: Second place slams in
+    // 8.4s: Third place slams in
+    // 12s: Top 3 shrink into full leaderboard
+    // 12.8s+: Rows 4-10 appear sequentially
 
-    // Wait for card to open before starting leaderboard animations
-    const startTimer = setTimeout(() => {
-      setAnimationStarted(true);
-    }, 600); // Wait for card open animation
+    // Wait for card to open before starting preview
+    const previewTimer = setTimeout(() => {
+      setPreviewStarted(true);
+    }, 600);
 
+    // Transition from preview to hero phase
+    // Set leaderboardStarted BEFORE phase change so rows are ready
+    const preLeaderboardTimer = setTimeout(() => {
+      setLeaderboardStarted(true);
+    }, 6400); // Start rows animating slightly before phase change
+
+    const heroTimer = setTimeout(() => {
+      setPhase('hero');
+    }, 6600); // 0.6s card open + 6s preview
+
+    // Transition from hero to full phase
     const fullTimer = setTimeout(() => {
       setPhase('full');
       // Pause to let top 3 settle, then reveal rows 4-10
@@ -112,29 +130,53 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
           setTimeout(() => setVisibleRows(i), (i - 4) * 200);
         }
       }, 800);
-    }, 5500);
+    }, 12000); // hero phase lasts ~5.4s
 
     return () => {
-      clearTimeout(startTimer);
+      clearTimeout(previewTimer);
+      clearTimeout(preLeaderboardTimer);
+      clearTimeout(heroTimer);
       clearTimeout(fullTimer);
     };
   }, [segment.id, isOpen]);
 
   const allRows = segment.mission_cycling_leaderboard.slice(0, 10);
+  const isPreview = phase === 'preview';
   const isHero = phase === 'hero';
 
   // Only render top 3 during hero, all 10 during full
   const rowsToRender = isHero ? allRows.slice(0, 3) : allRows;
 
   return (
-    <div className="leaderboard">
+    <div className="leaderboard" style={{ position: 'relative' }}>
+      {/* Elevation Preview - crossfades with leaderboard */}
       <motion.div
         className="flex flex-col flex-1"
+        style={{ position: 'absolute', inset: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isPreview ? 1 : 0 }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+      >
+        <ElevationProfile
+          distance={segment.distance.mi}
+          elevation={segment.elevation.gain_ft}
+          grade={segment.grade}
+          category={segment.category}
+          isVisible={previewStarted}
+        />
+      </motion.div>
+
+      {/* Leaderboard - crossfades with preview */}
+      <motion.div
+        className="flex flex-col flex-1"
+        style={{ position: 'absolute', inset: 0 }}
+        initial={{ opacity: 0 }}
         animate={{
+          opacity: isPreview ? 0 : 1,
           gap: isHero ? '16px' : '0px',
           justifyContent: isHero ? 'center' : 'space-evenly'
         }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
       >
         {rowsToRender.map((entry, index) => {
           const jerseyPath = getJerseyForRank(entry.rank, entry.claimed);
@@ -142,8 +184,8 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
           const isTopThree = entry.rank <= 3;
 
           // Determine if this row should be visible
-          // Only show after animation has started (card is open)
-          const shouldShow = animationStarted && (isTopThree || (!isHero && visibleRows >= entry.rank));
+          // Only show after leaderboard animation has started (after preview phase)
+          const shouldShow = leaderboardStarted && (isTopThree || (!isHero && visibleRows >= entry.rank));
 
           // Animation delay for top 3 slam-in (relative to animationStarted)
           const slamDelay = isTopThree ? 0.2 + (index * 0.8) : 0;
