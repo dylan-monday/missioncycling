@@ -43,7 +43,7 @@ export default function ElevationProfile({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
     >
-      {/* SVG Profile - 2.5x taller for dramatic effect */}
+      {/* SVG Profile - 2x taller for dramatic effect */}
       <div className="elevation-svg-container">
         <svg viewBox="0 0 400 300" className="elevation-svg">
           {/* Gradient definition */}

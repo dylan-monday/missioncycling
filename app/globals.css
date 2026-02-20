@@ -671,6 +671,7 @@ body {
 .elevation-svg-container {
   width: 100%;
   max-width: 500px;
+  max-height: 280px;
   margin: 0 auto;
 }
 
@@ -725,6 +726,8 @@ body {
   font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
+  width: auto;
+  text-align: center;
 }
 
 .elevation-stat .stat-label {
@@ -735,4 +738,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 4px;
+  width: auto;
+  text-align: center;
 }
