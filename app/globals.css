@@ -229,9 +229,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
+  justify-content: space-between;
   height: 100%;
+  width: 100%;
+}
+
+.card-left-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   width: 100%;
 }
 
@@ -257,6 +264,7 @@ body {
   text-align: center;
   line-height: 1.1;
   padding: 0 8px;
+  margin-bottom: 40px;
 
   overflow-wrap: break-word;
   word-wrap: break-word;

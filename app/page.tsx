@@ -206,19 +206,21 @@ export default function Home() {
               <div className="logo">
                 <Image src="/mc_logo_with_type.png" alt="Mission Cycling" width={150} height={200} className="object-contain" />
               </div>
-              <h1 className="segment-name">{activeSegment?.name}</h1>
-              <div className="segment-stats">
-                <div className="stat-row">
-                  <span className="stat-label">Distance:</span>
-                  <span className="stat-value">{activeSegment?.distance.mi}m</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Elev. Gain:</span>
-                  <span className="stat-value">{activeSegment?.elevation.gain_ft}ft</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Avg Grade:</span>
-                  <span className="stat-value">{activeSegment?.grade}%</span>
+              <div className="card-left-bottom">
+                <h1 className="segment-name">{activeSegment?.name}</h1>
+                <div className="segment-stats">
+                  <div className="stat-row">
+                    <span className="stat-label">Distance:</span>
+                    <span className="stat-value">{activeSegment?.distance.mi}m</span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Elev. Gain:</span>
+                    <span className="stat-value">{activeSegment?.elevation.gain_ft}ft</span>
+                  </div>
+                  <div className="stat-row">
+                    <span className="stat-label">Avg Grade:</span>
+                    <span className="stat-value">{activeSegment?.grade}%</span>
+                  </div>
                 </div>
               </div>
             </div>
