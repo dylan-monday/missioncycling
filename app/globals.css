@@ -294,7 +294,7 @@ body {
   color: var(--text-secondary);
   font-weight: 400;
   width: 70px;
-  text-align: right;
+  text-align: left;
 }
 
 .stat-value {
