@@ -215,7 +215,7 @@ export default function Home() {
                   </div>
                   <div className="stat-row">
                     <span className="stat-label">Elev. Gain:</span>
-                    <span className="stat-value">{activeSegment?.elevation.gain_ft}ft</span>
+                    <span className="stat-value">{activeSegment?.elevation.gain_ft.toLocaleString()}ft</span>
                   </div>
                   <div className="stat-row">
                     <span className="stat-label">Avg Grade:</span>

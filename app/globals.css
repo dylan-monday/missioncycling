@@ -283,7 +283,8 @@ body {
 
 .stat-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   align-items: center;
   font-family: 'tablet-gothic', 'Inter', sans-serif;
   font-size: 14px;
