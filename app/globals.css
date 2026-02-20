@@ -236,8 +236,8 @@ body {
 
 /* Logo - anchored to top */
 .logo {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 240px;
   flex-shrink: 0;
 }
 
