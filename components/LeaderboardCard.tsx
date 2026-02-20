@@ -230,7 +230,8 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
               >
                 {jerseyPath && isTopThree ? (
                   <motion.div
-                    animate={{ rotateY: 360 }}
+                    initial={{ rotateY: (entry.rank - 1) * 120 }}
+                    animate={{ rotateY: (entry.rank - 1) * 120 + 360 }}
                     transition={{
                       duration: 12,
                       ease: 'linear',
