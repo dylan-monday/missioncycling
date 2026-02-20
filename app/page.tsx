@@ -204,7 +204,7 @@ export default function Home() {
           >
             <div className="card-left-inner">
               <div className="logo">
-                <Image src="/mc_logo.svg" alt="Mission Cycling" width={120} height={120} className="object-contain" />
+                <Image src="/mc_logo_with_type.png" alt="Mission Cycling" width={120} height={160} className="object-contain" />
               </div>
               <h1 className="segment-name">{activeSegment?.name}</h1>
               <div className="segment-stats">
