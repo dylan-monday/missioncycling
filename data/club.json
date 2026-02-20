@@ -1,0 +1,16 @@
+{
+  "name": "Mission Cycling",
+  "id": 15,
+  "location": "San Francisco, California",
+  "tagline": "The sexiest cycling club on 18th Street.",
+  "memberCount": 161,
+  "era": "2008-2022",
+  "website": "http://missioncycling.org",
+  "stravaUrl": "https://www.strava.com/clubs/mission-cycling",
+  "clubType": "Casual cycling club",
+  "sport": "Cycling",
+  "inviteOnly": true,
+  "primaryColor": "#BAE0F7",
+  "coverPhoto": "https://dgalywyr863hv.cloudfront.net/pictures/clubs/15/4481370/1/large.jpg",
+  "avatar": "https://dgalywyr863hv.cloudfront.net/pictures/clubs/15/554/2/large.jpg"
+}

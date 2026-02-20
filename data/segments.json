@@ -1,0 +1,290 @@
+{
+  "segments": [
+    {
+      "id": "hawk-hill",
+      "name": "Hawk Hill",
+      "strava_id": 229781,
+      "url": "https://www.strava.com/segments/229781",
+      "location": "Marin Headlands (GGNRA), CA",
+      "distance": {
+        "km": 2.65,
+        "mi": 1.65
+      },
+      "elevation": {
+        "gain_m": 156,
+        "gain_ft": 511,
+        "lowest_ft": 298,
+        "highest_ft": 809
+      },
+      "grade": 6.8,
+      "category": "Cat 4",
+      "globalEfforts": 937141,
+      "globalAthletes": 72108,
+      "clubMembers": 149,
+      "clubBestTime": "6:17",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Trevor Gilmore", "date": "2019-09-10", "time": "6:17", "speed": "15.8 mi/h", "power": "464 W", "claimed": true },
+        { "rank": 2, "name": "Nick Kreeger", "date": "2013-06-13", "time": "6:44", "speed": "14.7 mi/h", "power": "387 W", "claimed": true },
+        { "rank": 3, "name": "Joe Mulvaney", "date": "2012-02-09", "time": "6:48", "speed": "14.6 mi/h", "power": "370 W", "claimed": true },
+        { "rank": 4, "name": "Neil Leonard", "date": "2016-05-17", "time": "6:48", "speed": "14.6 mi/h", "power": "365 W", "claimed": true },
+        { "rank": 5, "name": "Wayne Rickenbacker", "date": "2012-05-24", "time": "6:51", "speed": "14.5 mi/h", "power": "382 W", "claimed": true },
+        { "rank": 6, "name": "J Hudson", "date": "2012-02-23", "time": "6:52", "speed": "14.4 mi/h", "power": "376 W", "claimed": true },
+        { "rank": 7, "name": "Mark Shahinian", "date": "2017-09-26", "time": "6:57", "speed": "14.3 mi/h", "power": "359 W", "claimed": true },
+        { "rank": 8, "name": "G™", "date": "2013-05-30", "time": "7:02", "speed": "14.1 mi/h", "power": "344 W", "claimed": true },
+        { "rank": 9, "name": "Chris Hanrath", "date": "2012-07-03", "time": "7:04", "speed": "14.0 mi/h", "power": "359 W", "claimed": true },
+        { "rank": 10, "name": "Alan Schacter", "date": "2013-05-14", "time": "7:04", "speed": "14.0 mi/h", "power": null, "claimed": true }
+      ]
+    },
+    {
+      "id": "radio-road",
+      "name": "Radio Road from Underpass",
+      "strava_id": 241885,
+      "url": "https://www.strava.com/segments/241885",
+      "location": "San Bruno Mountain SP, CA",
+      "distance": {
+        "km": 2.39,
+        "mi": 1.49
+      },
+      "elevation": {
+        "gain_m": 172,
+        "gain_ft": 563,
+        "lowest_m": 212,
+        "highest_m": 384
+      },
+      "grade": 7.2,
+      "category": "Cat 3",
+      "globalEfforts": 91967,
+      "globalAthletes": 9584,
+      "clubMembers": 92,
+      "clubBestTime": "7:37",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "J Hudson", "date": "2013-01-01", "time": "7:37", "speed": "11.7 mi/h", "power": "328 W", "claimed": true },
+        { "rank": 2, "name": "C P", "date": "2015-10-18", "time": "7:39", "speed": "11.7 mi/h", "power": "380 W", "claimed": true },
+        { "rank": 3, "name": "Trevor Gilmore", "date": "2018-01-01", "time": "7:44", "speed": "11.6 mi/h", "power": "379 W", "claimed": true },
+        { "rank": 4, "name": "Joe Mulvaney", "date": "2011-05-25", "time": "8:02", "speed": "11.1 mi/h", "power": "307 W", "claimed": true },
+        { "rank": 5, "name": "Chris Hanrath", "date": "2013-01-01", "time": "8:14", "speed": "10.9 mi/h", "power": "310 W", "claimed": true },
+        { "rank": 6, "name": "Buck Lucas", "date": "2019-08-14", "time": "8:27", "speed": "10.6 mi/h", "power": "325 W", "claimed": true },
+        { "rank": 7, "name": "Keith Buckingham", "date": "2013-12-24", "time": "8:31", "speed": "10.5 mi/h", "power": "286 W", "claimed": true },
+        { "rank": 8, "name": "Nick Kreeger", "date": "2013-02-06", "time": "8:33", "speed": "10.5 mi/h", "power": "317 W", "claimed": true },
+        { "rank": 9, "name": "G™", "date": "2014-10-07", "time": "8:34", "speed": "10.4 mi/h", "power": "299 W", "claimed": true },
+        { "rank": 10, "name": "Simon Lamason", "date": "2022-05-29", "time": "8:50", "speed": "10.1 mi/h", "power": "323 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "old-la-honda",
+      "name": "Old La Honda Road",
+      "strava_id": 8109834,
+      "url": "https://www.strava.com/segments/8109834",
+      "location": "Woodside, CA",
+      "distance": {
+        "km": 5.04,
+        "mi": 3.13
+      },
+      "elevation": {
+        "gain_m": 389,
+        "gain_ft": 1275
+      },
+      "grade": 7.8,
+      "category": "Cat 2",
+      "globalEfforts": 476972,
+      "globalAthletes": 38719,
+      "clubMembers": 113,
+      "clubBestTime": "16:46",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Nick Kreeger", "date": "2015-04-18", "time": "16:46", "speed": "11.2 mi/h", "power": "357 W", "claimed": true },
+        { "rank": 2, "name": "C P", "date": "2015-03-07", "time": "17:26", "speed": "10.8 mi/h", "power": "349 W", "claimed": true },
+        { "rank": 3, "name": "Joe Mulvaney", "date": "2011-06-18", "time": "17:31", "speed": "10.7 mi/h", "power": "306 W", "claimed": true },
+        { "rank": 4, "name": "Trevor Gilmore", "date": "2014-04-12", "time": "18:20", "speed": "10.3 mi/h", "power": "332 W", "claimed": true },
+        { "rank": 5, "name": "Chris Hanrath", "date": "2013-04-27", "time": "18:33", "speed": "10.1 mi/h", "power": "305 W", "claimed": true },
+        { "rank": 6, "name": "Brendan Harney", "date": "2012-08-21", "time": "18:33", "speed": "10.1 mi/h", "power": "314 W", "claimed": true },
+        { "rank": 7, "name": "Don Mango", "date": "2015-04-18", "time": "18:46", "speed": "10.0 mi/h", "power": "355 W", "claimed": true },
+        { "rank": 8, "name": "G™", "date": "2013-04-27", "time": "19:15", "speed": "9.8 mi/h", "power": "291 W", "claimed": true },
+        { "rank": 9, "name": "Tommaso De Vecchi", "date": "2015-04-18", "time": "19:26", "speed": "9.7 mi/h", "power": "311 W", "claimed": true },
+        { "rank": 10, "name": "Alan Schacter", "date": "2012-05-09", "time": "19:29", "speed": "9.7 mi/h", "power": "316 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "hwy1-muir-beach",
+      "name": "Hwy 1 Climb from Muir Beach",
+      "strava_id": 4793848,
+      "url": "https://www.strava.com/segments/4793848",
+      "location": "Marin County, CA",
+      "distance": {
+        "km": 3.07,
+        "mi": 1.91
+      },
+      "elevation": {
+        "gain_m": 212,
+        "gain_ft": 694,
+        "lowest_m": 6,
+        "highest_m": 192
+      },
+      "grade": 6.0,
+      "category": "Cat 3",
+      "globalEfforts": 142858,
+      "globalAthletes": 23157,
+      "clubMembers": 129,
+      "clubBestTime": "7:55",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Trevor Gilmore", "date": "2020-06-07", "time": "7:55", "speed": "14.5 mi/h", "power": "402 W", "claimed": true },
+        { "rank": 2, "name": "C P", "date": "2016-07-23", "time": "8:10", "speed": "14.1 mi/h", "power": "340 W", "claimed": true },
+        { "rank": 3, "name": "Bruce Prescott", "date": "2018-06-09", "time": "8:38", "speed": "13.3 mi/h", "power": "374 W", "claimed": true },
+        { "rank": 4, "name": "Nick Kreeger", "date": "2012-10-21", "time": "8:38", "speed": "13.3 mi/h", "power": "336 W", "claimed": true },
+        { "rank": 5, "name": "Chris Hanrath", "date": "2012-11-07", "time": "8:48", "speed": "13.0 mi/h", "power": "312 W", "claimed": true },
+        { "rank": 6, "name": "Alan Schacter", "date": "2013-03-18", "time": "8:50", "speed": "13.0 mi/h", "power": null, "claimed": true },
+        { "rank": 7, "name": "James Woodcock", "date": "2015-10-04", "time": "9:04", "speed": "12.7 mi/h", "power": "321 W", "claimed": true },
+        { "rank": 8, "name": "Robert Halton", "date": "2014-07-23", "time": "9:05", "speed": "12.6 mi/h", "power": "345 W", "claimed": true },
+        { "rank": 9, "name": "Don Mango", "date": "2014-08-12", "time": "9:08", "speed": "12.6 mi/h", "power": "346 W", "claimed": true },
+        { "rank": 10, "name": "Brian Bailey", "date": "2019-09-28", "time": "9:11", "speed": "12.5 mi/h", "power": "333 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "alpe-dhuez",
+      "name": "Alpe d'Huez",
+      "strava_id": 652851,
+      "url": "https://www.strava.com/segments/652851",
+      "location": "La Garde, France",
+      "distance": {
+        "km": 12.02,
+        "mi": 7.47
+      },
+      "elevation": {
+        "gain_m": 1047,
+        "gain_ft": 3436,
+        "lowest_m": 728,
+        "highest_m": 1776
+      },
+      "grade": 8.8,
+      "category": "HC",
+      "globalEfforts": 366802,
+      "globalAthletes": 188161,
+      "clubMembers": 48,
+      "clubBestTime": "48:44",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Nick Kreeger", "date": "2015-07-22", "time": "48:44", "speed": "9.2 mi/h", "power": "314 W", "claimed": true },
+        { "rank": 2, "name": "Buck Lucas", "date": "2015-07-28", "time": "50:15", "speed": "8.9 mi/h", "power": "346 W", "claimed": true },
+        { "rank": 3, "name": "G™", "date": "2014-07-14", "time": "53:39", "speed": "8.4 mi/h", "power": "275 W", "claimed": true },
+        { "rank": 4, "name": "Trevor Gilmore", "date": "2013-07-15", "time": "53:47", "speed": "8.3 mi/h", "power": "295 W", "claimed": true },
+        { "rank": 5, "name": "C P", "date": "2018-09-15", "time": "54:17", "speed": "8.3 mi/h", "power": "271 W", "claimed": true },
+        { "rank": 6, "name": "Don Mango", "date": "2014-07-14", "time": "54:51", "speed": "8.2 mi/h", "power": "317 W", "claimed": true },
+        { "rank": 7, "name": "Brian Bailey", "date": "2019-07-25", "time": "55:37", "speed": "8.1 mi/h", "power": "284 W", "claimed": true },
+        { "rank": 8, "name": "Mark Shahinian", "date": "2015-07-20", "time": "57:39", "speed": "7.8 mi/h", "power": "296 W", "claimed": true },
+        { "rank": 9, "name": "Joe Mulvaney", "date": "2015-07-20", "time": "57:53", "speed": "7.7 mi/h", "power": "0 W", "claimed": true },
+        { "rank": 10, "name": "Keith Buckingham", "date": "2013-07-16", "time": "57:57", "speed": "7.7 mi/h", "power": "256 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "four-corners",
+      "name": "Four Corners Climb",
+      "strava_id": 1173191,
+      "url": "https://www.strava.com/segments/1173191",
+      "location": "Mill Valley, CA",
+      "distance": {
+        "km": 3.41,
+        "mi": 2.12
+      },
+      "elevation": {
+        "gain_m": 250,
+        "gain_ft": 822,
+        "lowest_ft": 112,
+        "highest_ft": 723
+      },
+      "grade": 5.4,
+      "category": "Cat 3",
+      "globalEfforts": 274506,
+      "globalAthletes": 25207,
+      "clubMembers": 135,
+      "clubBestTime": "8:25",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Trevor Gilmore", "date": "2018-08-29", "time": "8:25", "speed": "15.2 mi/h", "power": "396 W", "claimed": true },
+        { "rank": 2, "name": "Joe Mulvaney", "date": "2010-08-15", "time": "9:14", "speed": "13.8 mi/h", "power": "315 W", "claimed": true },
+        { "rank": 3, "name": "Nick Kreeger", "date": "2012-07-28", "time": "9:25", "speed": "13.6 mi/h", "power": "350 W", "claimed": true },
+        { "rank": 4, "name": "Don Mango", "date": "2015-08-18", "time": "9:26", "speed": "13.5 mi/h", "power": "371 W", "claimed": true },
+        { "rank": 5, "name": "Bruce Prescott", "date": "2015-03-14", "time": "9:28", "speed": "13.5 mi/h", "power": "358 W", "claimed": true },
+        { "rank": 6, "name": "C P", "date": "2018-06-24", "time": "9:42", "speed": "13.2 mi/h", "power": "255 W", "claimed": true },
+        { "rank": 7, "name": "J Hudson", "date": "2010-08-15", "time": "9:46", "speed": "13.1 mi/h", "power": "295 W", "claimed": true },
+        { "rank": 8, "name": "Wayne Rickenbacker", "date": "2012-07-04", "time": "9:53", "speed": "12.9 mi/h", "power": "337 W", "claimed": true },
+        { "rank": 9, "name": "G™", "date": "2011-10-29", "time": "9:55", "speed": "12.9 mi/h", "power": "285 W", "claimed": true },
+        { "rank": 10, "name": "Mike Betts", "date": "2013-07-02", "time": "9:57", "speed": "12.8 mi/h", "power": "288 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "bofax-climb",
+      "name": "BoFax Climb",
+      "strava_id": 1707949,
+      "url": "https://www.strava.com/segments/1707949",
+      "location": "Marin County, CA",
+      "distance": {
+        "km": 6.32,
+        "mi": 3.93
+      },
+      "elevation": {
+        "gain_m": 453,
+        "gain_ft": 1486,
+        "lowest_ft": 45,
+        "highest_ft": 1531
+      },
+      "grade": 7.1,
+      "category": "Cat 2",
+      "globalEfforts": 95136,
+      "globalAthletes": 18031,
+      "clubMembers": 117,
+      "clubBestTime": "20:25",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Trevor Gilmore", "date": "2019-09-14", "time": "20:25", "speed": "11.6 mi/h", "power": "392 W", "claimed": true },
+        { "rank": 2, "name": "J Hudson", "date": "2012-09-15", "time": "21:08", "speed": "11.2 mi/h", "power": "327 W", "claimed": true },
+        { "rank": 3, "name": "C P", "date": "2017-07-22", "time": "21:21", "speed": "11.1 mi/h", "power": "262 W", "claimed": true },
+        { "rank": 4, "name": "Nick Kreeger", "date": "2015-03-07", "time": "21:33", "speed": "11.0 mi/h", "power": "343 W", "claimed": true },
+        { "rank": 5, "name": "Joe Mulvaney", "date": "2010-09-09", "time": "21:45", "speed": "10.9 mi/h", "power": "293 W", "claimed": true },
+        { "rank": 6, "name": "Chris Hanrath", "date": "2015-09-12", "time": "23:17", "speed": "10.1 mi/h", "power": "316 W", "claimed": true },
+        { "rank": 7, "name": "Brendan Harney", "date": "2012-09-15", "time": "23:22", "speed": "10.1 mi/h", "power": "303 W", "claimed": true },
+        { "rank": 8, "name": "Bruce Prescott", "date": "2015-08-01", "time": "23:24", "speed": "10.1 mi/h", "power": "324 W", "claimed": true },
+        { "rank": 9, "name": "James Woodcock", "date": "2015-11-21", "time": "23:34", "speed": "10.0 mi/h", "power": "290 W", "claimed": true },
+        { "rank": 10, "name": "Don Mango", "date": "2015-09-05", "time": "23:53", "speed": "9.9 mi/h", "power": "334 W", "claimed": true }
+      ]
+    },
+    {
+      "id": "bourg-doisans",
+      "name": "Bourg d'Oisans > Bourg d'Arud",
+      "strava_id": 3681888,
+      "url": "https://www.strava.com/segments/3681888",
+      "location": "Le Bourg-d'Oisans, France",
+      "distance": {
+        "km": 12.44,
+        "mi": 7.73
+      },
+      "elevation": {
+        "gain_m": 248,
+        "gain_ft": 813,
+        "lowest_ft": 2388,
+        "highest_ft": 3112
+      },
+      "grade": 1.6,
+      "category": "Cat 4",
+      "globalEfforts": 25234,
+      "globalAthletes": 16312,
+      "clubMembers": 39,
+      "clubBestTime": "24:18",
+      "visible": true,
+      "mission_cycling_leaderboard": [
+        { "rank": 1, "name": "Nick Kreeger", "date": "2015-07-19", "time": "24:18", "speed": "19.1 mi/h", "power": "279 W", "claimed": true },
+        { "rank": 2, "name": "Buck Lucas", "date": "2015-07-27", "time": "26:28", "speed": "17.5 mi/h", "power": "286 W", "claimed": true },
+        { "rank": 3, "name": "Quintin Mecke", "date": "2017-07-18", "time": "27:40", "speed": "16.8 mi/h", "power": "237 W", "claimed": true },
+        { "rank": 4, "name": "Derek Crovo", "date": "2014-07-16", "time": "27:57", "speed": "16.6 mi/h", "power": "229 W", "claimed": true },
+        { "rank": 5, "name": "Matt Stewart", "date": "2017-07-17", "time": "28:18", "speed": "16.4 mi/h", "power": "228 W", "claimed": true },
+        { "rank": 6, "name": "Brian Bailey", "date": "2019-07-25", "time": "28:25", "speed": "16.3 mi/h", "power": "220 W", "claimed": true },
+        { "rank": 7, "name": "Double D Nice", "date": "2012-07-14", "time": "28:29", "speed": "16.3 mi/h", "power": "220 W", "claimed": true },
+        { "rank": 8, "name": "Yann Kerhervé", "date": "2015-07-24", "time": "28:32", "speed": "16.3 mi/h", "power": "218 W", "claimed": true },
+        { "rank": 9, "name": "Kevin LaKritz", "date": "2013-07-14", "time": "28:59", "speed": "16.0 mi/h", "power": "217 W", "claimed": true },
+        { "rank": 10, "name": "Eric Newberg", "date": "2016-07-11", "time": "29:01", "speed": "16.0 mi/h", "power": "210 W", "claimed": true }
+      ]
+    }
+  ]
+}
