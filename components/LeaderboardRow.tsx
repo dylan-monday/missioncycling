@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Transition } from 'framer-motion';
 import Image from 'next/image';
 
 interface LeaderboardEntry {
@@ -18,6 +18,12 @@ interface LeaderboardRowProps {
   leaderTime?: string;
   animationPhase: 'title' | 'top3-big' | 'top3-shrink' | 'rest';
   isTopThreeSlot: boolean;
+}
+
+interface AnimationConfig {
+  initial: { x?: number; opacity?: number; scale?: number };
+  animate: { x?: number; opacity?: number; scale?: number };
+  transition: Transition;
 }
 
 function parseTimeToSeconds(time: string): number {
@@ -70,7 +76,7 @@ export default function LeaderboardRow({
   const gap = leaderTime && entry.rank > 1 && entry.claimed ? formatGap(leaderTime, entry.time) : '';
 
   // Determine animation based on phase and position
-  const getAnimationProps = () => {
+  const getAnimationProps = (): AnimationConfig => {
     if (isTopThreeSlot) {
       // TOP 3 ANIMATION
       if (animationPhase === 'top3-big') {
@@ -78,7 +84,7 @@ export default function LeaderboardRow({
           initial: { x: -500, opacity: 0, scale: 1.3 },
           animate: { x: 0, opacity: 1, scale: 1.25 },
           transition: {
-            delay: index * 0.5, // 500ms between each top 3
+            delay: index * 0.5,
             duration: 0.6,
             ease: [0.22, 1.3, 0.36, 1],
           },
@@ -93,19 +99,17 @@ export default function LeaderboardRow({
           },
         };
       }
-    } else {
-      // REST OF LEADERBOARD (4-10)
-      return {
-        initial: { x: -400, opacity: 0, scale: 1.05 },
-        animate: { x: 0, opacity: 1, scale: 1 },
-        transition: {
-          delay: index * 0.12,
-          duration: 0.35,
-          ease: [0.22, 1.2, 0.36, 1],
-        },
-      };
     }
-    return {};
+    // REST OF LEADERBOARD (4-10) or default
+    return {
+      initial: { x: -400, opacity: 0, scale: 1.05 },
+      animate: { x: 0, opacity: 1, scale: 1 },
+      transition: {
+        delay: index * 0.12,
+        duration: 0.35,
+        ease: [0.22, 1.2, 0.36, 1],
+      },
+    };
   };
 
   const animProps = getAnimationProps();
