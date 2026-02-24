@@ -173,9 +173,15 @@ export default function Home() {
             return;
           }
 
-          // User exists - always show splash first, then check their status
-          // Splash will show "Welcome back" for returning users
-          console.log('[Home] User found, showing splash');
+          // New user (just authenticated, pending sync) - go to welcome
+          if (userData.sync_status === 'pending') {
+            console.log('[Home] New user, going to welcome');
+            setAppState('welcome');
+            return;
+          }
+
+          // Returning user (sync complete) - show splash with continue option
+          console.log('[Home] Returning user, showing splash');
           setAppState('splash');
         } else {
           // No valid session, show splash for new user
