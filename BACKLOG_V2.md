@@ -325,6 +325,33 @@ data/
 
 ---
 
+## Future Features
+
+### Club Membership Gating
+**Priority:** Before public launch
+
+Currently anyone with Strava can authenticate and add their data. Before opening to the public, restrict data contribution to verified MC club members:
+
+1. **On Strava auth callback**, check if user is a member of Mission Cycling club (ID: 15)
+2. **If member**: Allow full experience (sync, greatest hits, leaderboard verification)
+3. **If not member**: Show message "This experience is for Mission Cycling members. [Join the club on Strava]" with link to `https://www.strava.com/clubs/15`
+4. **Later (post-content)**: Open passive viewing to anyone (no auth required), but data contribution remains club-only
+
+**Implementation notes:**
+- Strava API: `GET /athlete/clubs` returns user's club memberships
+- Check for club ID 15 in the response
+- Store `is_mc_member` boolean on user record
+- Gate sync/verification behind membership check
+
+### Other Future Work
+- [ ] Find Me view (show user's rank + surrounding riders)
+- [ ] Club intro sequence (first-time cinematic)
+- [ ] Aggregate leaderboards (KOM standings, Iron Rider)
+- [ ] Keyboard navigation (arrows, space, F for fullscreen)
+- [ ] Kiosk mode for event display
+
+---
+
 ## Files to Add to Repo
 
 Copy these into the existing Next.js project:

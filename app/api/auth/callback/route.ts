@@ -9,7 +9,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeToken } from '@/lib/strava';
 import { upsertUser } from '@/lib/supabase';
-import { cookies } from 'next/headers';
 
 const SESSION_COOKIE_NAME = 'mc_session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -85,23 +84,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(errorUrl);
   }
 
-  // Step 3: Set session cookie
-  try {
-    console.log('[OAuth Callback] Setting cookie...');
-    const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: SESSION_MAX_AGE,
-      path: '/',
-    });
-  } catch (err) {
-    console.error('[OAuth Callback] Cookie set failed (non-fatal):', err);
-  }
-
-  // Step 4: Set sync_status to pending (frontend will trigger sync after welcome screen)
-  // We don't run sync here to avoid blocking the redirect
+  // Step 3: Set sync_status to pending (frontend will trigger sync after welcome screen)
   console.log('[OAuth Callback] Setting sync_status to pending...');
   try {
     const supabaseServer = (await import('@/lib/supabase')).createServerSupabaseClient();
@@ -113,7 +96,18 @@ export async function GET(request: NextRequest) {
     console.error('[OAuth Callback] Failed to set sync status (non-fatal):', err);
   }
 
-  // Step 5: Redirect to main page (no query params needed - frontend checks session)
+  // Step 4: Create redirect response with session cookie
   console.log('[OAuth Callback] Success! Redirecting to:', redirectUrl);
-  return NextResponse.redirect(new URL(redirectUrl, request.url));
+  const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+
+  // Set cookie on the response object (required for App Router redirects)
+  response.cookies.set(SESSION_COOKIE_NAME, user.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: SESSION_MAX_AGE,
+    path: '/',
+  });
+
+  return response;
 }
