@@ -43,6 +43,9 @@ export const supabase = {
   },
 };
 
+// Alias for client-side Supabase (used by lib/data.ts)
+export const createClientSupabaseClient = getSupabaseClient;
+
 // -----------------------------------------------------------------------------
 // Server-side Supabase (service role key, bypasses RLS)
 // Use this in API routes for creating users, storing tokens, etc.

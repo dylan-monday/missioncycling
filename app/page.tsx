@@ -140,6 +140,7 @@ export default function Home() {
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioStartedRef = useRef(false);
+  const highlightsAudioRef = useRef<HTMLAudioElement>(null);
 
   // =============================================================================
   // Session Check on Mount
@@ -299,6 +300,13 @@ export default function Home() {
 
   // Handle continue click from splash (returning synced users)
   const handleContinue = useCallback(async () => {
+    // Start highlights audio immediately on user click (browser allows this)
+    if (highlightsAudioRef.current) {
+      highlightsAudioRef.current.volume = 0.15;
+      highlightsAudioRef.current.loop = true;
+      highlightsAudioRef.current.play().catch(() => {});
+    }
+
     // Fetch greatest hits for returning user
     try {
       const response = await fetch('/api/greatest-hits/me');
@@ -486,7 +494,17 @@ export default function Home() {
 
   // Greatest hits reveal
   if (appState === 'greatest_hits') {
-    return <GreatestHitsReveal hits={greatestHits} onComplete={handleGreatestHitsComplete} onUserInteraction={handleGreatestHitsInteraction} />;
+    return (
+      <>
+        <audio ref={highlightsAudioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" />
+        <GreatestHitsReveal
+          hits={greatestHits}
+          onComplete={handleGreatestHitsComplete}
+          onUserInteraction={handleGreatestHitsInteraction}
+          audioRef={highlightsAudioRef}
+        />
+      </>
+    );
   }
 
   // Broadcast intro - button to start (ensures audio can play)

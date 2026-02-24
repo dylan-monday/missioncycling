@@ -64,14 +64,14 @@ const cardWrapperVariants = {
     scale: 1,
     transition: {
       duration: 0.7,
-      ease: [0.16, 1, 0.3, 1] // ease out expo
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number] // ease out expo
     }
   },
   exit: {
     scale: 0.85,
     transition: {
       duration: 0.5,
-      ease: [0.4, 0, 1, 1] // ease in
+      ease: [0.4, 0, 1, 1] as [number, number, number, number] // ease in
     }
   }
 };
@@ -85,14 +85,14 @@ const cardContentVariants = {
     opacity: 1,
     transition: {
       duration: 0.5,
-      ease: [0.16, 1, 0.3, 1]
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
     }
   },
   exit: {
     opacity: 0,
     transition: {
       duration: 0.4,
-      ease: [0.4, 0, 1, 1]
+      ease: [0.4, 0, 1, 1] as [number, number, number, number]
     }
   }
 };

@@ -15,18 +15,23 @@ interface GreatestHitsRevealProps {
   hits: GreatestHit[];
   onComplete: () => void;
   onUserInteraction?: () => void; // Called on first user click (for starting music)
+  audioRef?: React.RefObject<HTMLAudioElement | null>; // External audio ref (already playing)
 }
 
-export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction }: GreatestHitsRevealProps) {
+export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction, audioRef: externalAudioRef }: GreatestHitsRevealProps) {
   const [phase, setPhase] = useState<'title' | 'cards' | 'fadeout'>('title');
   const [currentHitIndex, setCurrentHitIndex] = useState(0);
   const hasCompletedRef = useRef(false);
   const hasInteractedRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const internalAudioRef = useRef<HTMLAudioElement>(null);
 
-  // Start ambient audio on mount
+  // Use external audio ref if provided, otherwise use internal
+  const audioRef = externalAudioRef || internalAudioRef;
+  const ownsAudio = !externalAudioRef; // Only manage audio lifecycle if we own it
+
+  // Start ambient audio on mount (only if we own the audio)
   useEffect(() => {
-    if (audioRef.current) {
+    if (ownsAudio && audioRef.current) {
       audioRef.current.volume = 0.15;
       audioRef.current.loop = true;
       audioRef.current.play().catch(() => {});
@@ -46,7 +51,7 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
         }, 50);
       }
     };
-  }, []);
+  }, [ownsAudio, audioRef]);
 
   const handleSkip = () => {
     // Trigger user interaction callback (for music)
@@ -135,8 +140,10 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
       }}
       transition={{ duration: 1 }}
     >
-      {/* Ambient audio (continues from sync) */}
-      <audio ref={audioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" />
+      {/* Ambient audio (only render if we own it, not using external ref) */}
+      {ownsAudio && (
+        <audio ref={internalAudioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" />
+      )}
       <AnimatePresence mode="wait">
         {/* Title phase */}
         {phase === 'title' && displayHits.length > 0 && (
