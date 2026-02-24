@@ -707,8 +707,8 @@ body {
 .elevation-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  max-width: 500px;
+  gap: 32px;
+  max-width: 550px;
   margin-left: auto;
   margin-right: auto;
   flex-shrink: 0;

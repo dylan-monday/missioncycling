@@ -6,10 +6,14 @@ import Image from 'next/image';
 interface LeaderboardEntry {
   rank: number;
   name: string | null;
+  rider_name?: string | null;
   date: string | null;
   time: string;
+  time_display?: string;
   speed: string | null;
   claimed: boolean;
+  status?: 'ghost' | 'claimed' | 'verified';
+  profile_pic?: string | null;
 }
 
 interface LeaderboardRowProps {
@@ -72,8 +76,17 @@ export default function LeaderboardRow({
 }: LeaderboardRowProps) {
   const isLeader = entry.rank === 1;
   const isTopThree = entry.rank <= 3;
-  const isUnclaimed = !entry.claimed;
-  const gap = leaderTime && entry.rank > 1 && entry.claimed ? formatGap(leaderTime, entry.time) : '';
+  const status = entry.status || (entry.claimed ? 'verified' : 'ghost');
+  const isGhost = status === 'ghost';
+  const isClaimed = status === 'claimed';
+  const isVerified = status === 'verified';
+  const isUnclaimed = isGhost && !entry.name && !entry.rider_name;
+  const displayName = entry.name || entry.rider_name;
+  const displayTime = entry.time_display || entry.time;
+  const gap = leaderTime && entry.rank > 1 && !isGhost ? formatGap(leaderTime, displayTime) : '';
+
+  // Opacity based on status
+  const rowOpacity = isGhost ? 'opacity-50' : isClaimed ? 'opacity-70' : '';
 
   // Determine animation based on phase and position
   const getAnimationProps = (): AnimationConfig => {
@@ -122,28 +135,46 @@ export default function LeaderboardRow({
       layout
       {...animProps}
       className={`
-        relative flex items-center ${rowHeight} px-2 origin-left
-        ${isLeader ? 'bg-gradient-to-r from-yellow-500/95 to-yellow-600/90' : ''}
-        ${!isLeader && isTopThree ? 'bg-gradient-to-r from-white/15 to-transparent' : ''}
-        ${!isTopThree && entry.claimed ? 'bg-gradient-to-r from-white/5 to-transparent' : ''}
-        ${isUnclaimed ? 'bg-gradient-to-r from-black/30 to-transparent' : ''}
+        relative flex items-center ${rowHeight} px-2 origin-left ${rowOpacity}
+        ${isLeader && !isGhost ? 'bg-gradient-to-r from-yellow-500/95 to-yellow-600/90' : ''}
+        ${isLeader && isGhost ? 'bg-gradient-to-r from-yellow-500/50 to-yellow-600/40' : ''}
+        ${!isLeader && isTopThree && !isGhost ? 'bg-gradient-to-r from-white/15 to-transparent' : ''}
+        ${!isLeader && isTopThree && isGhost ? 'bg-gradient-to-r from-white/8 to-transparent' : ''}
+        ${!isTopThree && isVerified ? 'bg-gradient-to-r from-white/5 to-transparent' : ''}
+        ${!isTopThree && isGhost ? 'bg-gradient-to-r from-black/30 to-transparent' : ''}
         border-l-[3px]
-        ${isLeader ? 'border-yellow-300' : isTopThree ? 'border-white/50' : entry.claimed ? 'border-white/20' : 'border-white/10'}
+        ${isLeader && !isGhost ? 'border-yellow-300' : ''}
+        ${isLeader && isGhost ? 'border-yellow-300/50' : ''}
+        ${!isLeader && isTopThree && !isGhost ? 'border-white/50' : ''}
+        ${!isLeader && isTopThree && isGhost ? 'border-white/25' : ''}
+        ${!isTopThree && isVerified ? 'border-white/20' : ''}
+        ${!isTopThree && !isVerified ? 'border-white/10' : ''}
       `}
     >
       {/* Rank */}
       <div
         className={`w-[6%] font-broadcast text-[1.8vh] text-center
-          ${isLeader ? 'text-black' : isUnclaimed ? 'text-white/20' : 'text-white'}
+          ${isLeader && !isGhost ? 'text-black' : ''}
+          ${isLeader && isGhost ? 'text-black/50' : ''}
+          ${!isLeader && isGhost ? 'text-white/30' : ''}
+          ${!isLeader && !isGhost ? 'text-white' : ''}
         `}
         style={{ textShadow: isLeader ? 'none' : '1px 1px 0 rgba(0,0,0,0.8)' }}
       >
         {entry.rank}
       </div>
 
-      {/* Jersey icon */}
+      {/* Profile pic (verified) or Jersey icon */}
       <div className="w-[32px] h-[32px] flex items-center justify-center mx-1">
-        {entry.claimed && (
+        {isVerified && entry.profile_pic ? (
+          <Image
+            src={entry.profile_pic}
+            alt=""
+            width={28}
+            height={28}
+            className="rounded-full object-cover border border-white/30"
+          />
+        ) : !isGhost ? (
           <Image
             src={getJerseyForRank(entry.rank)}
             alt=""
@@ -156,11 +187,13 @@ export default function LeaderboardRow({
                 : 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
             }}
           />
+        ) : (
+          <div className="w-[28px] h-[28px] rounded-full bg-white/10 border border-white/20" />
         )}
       </div>
 
-      {/* Name */}
-      <div className="flex-1 min-w-0 px-2">
+      {/* Name + Verified Badge */}
+      <div className="flex-1 min-w-0 px-2 flex items-center gap-1">
         {isUnclaimed ? (
           <span
             className="text-[1.6vh] text-white/25 tracking-wide"
@@ -172,43 +205,64 @@ export default function LeaderboardRow({
             [ UNCLAIMED ]
           </span>
         ) : (
-          <span
-            className={`tracking-wide truncate block uppercase
-              ${isLeader ? 'text-black' : 'text-white'}
-              ${isTopThreeSlot && animationPhase === 'top3-big' ? 'text-[2.2vh]' : 'text-[1.8vh]'}
-            `}
-            style={{
-              fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-              fontStyle: 'italic',
-              fontWeight: 'bold',
-              textShadow: isLeader
-                ? '1px 1px 0 rgba(255,255,255,0.3)'
-                : `
-                  2px 2px 0 #000,
-                  -2px -2px 0 #000,
-                  2px -2px 0 #000,
-                  -2px 2px 0 #000,
-                  2px 0 0 #000,
-                  -2px 0 0 #000,
-                  0 2px 0 #000,
-                  0 -2px 0 #000
-                `,
-            }}
-          >
-            {entry.name}
-          </span>
+          <>
+            <span
+              className={`tracking-wide truncate uppercase
+                ${isLeader && !isGhost ? 'text-black' : ''}
+                ${isLeader && isGhost ? 'text-black/60' : ''}
+                ${!isLeader && isGhost ? 'text-white/50' : ''}
+                ${!isLeader && !isGhost ? 'text-white' : ''}
+                ${isTopThreeSlot && animationPhase === 'top3-big' ? 'text-[2.2vh]' : 'text-[1.8vh]'}
+              `}
+              style={{
+                fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
+                fontStyle: 'italic',
+                fontWeight: 'bold',
+                textShadow: isLeader
+                  ? '1px 1px 0 rgba(255,255,255,0.3)'
+                  : isGhost
+                  ? '1px 1px 0 rgba(0,0,0,0.5)'
+                  : `
+                    2px 2px 0 #000,
+                    -2px -2px 0 #000,
+                    2px -2px 0 #000,
+                    -2px 2px 0 #000,
+                    2px 0 0 #000,
+                    -2px 0 0 #000,
+                    0 2px 0 #000,
+                    0 -2px 0 #000
+                  `,
+              }}
+            >
+              {displayName}
+            </span>
+            {/* Strava verified checkmark */}
+            {isVerified && (
+              <svg
+                className="w-[1.4vh] h-[1.4vh] flex-shrink-0"
+                viewBox="0 0 24 24"
+                fill="#FC4C02"
+              >
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+              </svg>
+            )}
+          </>
         )}
       </div>
 
       {/* Time */}
       <div
         className={`font-broadcast tabular-nums w-[18%] text-right
-          ${isLeader ? 'text-black' : isUnclaimed ? 'text-white/15' : 'text-white'}
+          ${isLeader && !isGhost ? 'text-black' : ''}
+          ${isLeader && isGhost ? 'text-black/60' : ''}
+          ${!isLeader && isUnclaimed ? 'text-white/15' : ''}
+          ${!isLeader && isGhost && !isUnclaimed ? 'text-white/50' : ''}
+          ${!isLeader && !isGhost && !isUnclaimed ? 'text-white' : ''}
           ${isTopThreeSlot && animationPhase === 'top3-big' ? 'text-[2.4vh]' : 'text-[2vh]'}
         `}
-        style={{ textShadow: isLeader ? 'none' : '2px 2px 0 rgba(0,0,0,0.9)' }}
+        style={{ textShadow: isLeader ? 'none' : isGhost ? '1px 1px 0 rgba(0,0,0,0.5)' : '2px 2px 0 rgba(0,0,0,0.9)' }}
       >
-        {entry.time}
+        {displayTime}
       </div>
 
       {/* Gap */}
@@ -220,10 +274,10 @@ export default function LeaderboardRow({
           {gap}
         </div>
       )}
-      {!gap && entry.claimed && entry.rank > 1 && <div className="w-[12%]" />}
+      {!gap && isVerified && entry.rank > 1 && <div className="w-[12%]" />}
 
       {/* Leader badge */}
-      {isLeader && entry.claimed && (
+      {isLeader && isVerified && (
         <motion.div
           initial={{ scale: 0, x: 20 }}
           animate={{ scale: 1, x: 0 }}

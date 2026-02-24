@@ -10,6 +10,7 @@
   },
   "description": "Mission Cycling Retrospective - A broadcast-style leaderboard display",
   "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
     "framer-motion": "^12.34.2",
     "next": "^14.2.35",
     "react": "^18.3.1",

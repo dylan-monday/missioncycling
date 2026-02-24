@@ -4,17 +4,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import segmentsData from '@/data/segments.json';
+import { CLUB_LORE_TICKER } from '@/data/club-lore';
 
+// Updated sponsor list with new logos
 const SPONSORS = [
-  { name: 'Tartine', logo: '/sponsors/tartine.jpg' },
-  { name: 'Bi-Rite', logo: '/sponsors/birite.jpg' },
-  { name: 'Ritual', logo: '/sponsors/ritual.jpg' },
-  { name: 'Delfina', logo: '/sponsors/delfina.jpg' },
-  { name: 'Flour + Water', logo: '/sponsors/flourandwater.jpg' },
-  { name: 'Range', logo: '/sponsors/range.jpg' },
-  { name: 'Bespoke', logo: '/sponsors/bespoke.jpg' },
-  { name: '500 Club', logo: '/sponsors/500club.jpg' },
-  { name: 'Weird Fish', logo: '/sponsors/weirdfish.jpg' },
+  { name: 'Tartine', logo: '/sponsors/tartine bakery.png' },
+  { name: 'Bi-Rite', logo: '/sponsors/bi rite market.png' },
+  { name: 'Ritual', logo: '/sponsors/ritual coffee roasters.png' },
+  { name: 'Delfina', logo: '/sponsors/delfina.png' },
+  { name: 'Flour + Water', logo: '/sponsors/flour and water.png' },
+  { name: 'Range', logo: '/sponsors/range.png' },
+  { name: '500 Club', logo: '/sponsors/the 500 club.png' },
+  { name: 'Weird Fish', logo: '/sponsors/weird fish.png' },
+  { name: 'Amnesia', logo: '/sponsors/amnesia.png' },
+  { name: 'Anchor Brewing', logo: '/sponsors/anchor brewing.png' },
+  { name: 'Coffee Bar', logo: '/sponsors/coffee bar.png' },
+  { name: 'Monks Kettle', logo: '/sponsors/the monks kettle.png' },
 ];
 
 // Member spotlights - fun facts about club members
@@ -111,6 +116,16 @@ function generateTickerItems() {
     });
   });
 
+  // Add club lore (Tier 3 content)
+  CLUB_LORE_TICKER.forEach(lore => {
+    // Skip items with [FILL] placeholders
+    if (lore.text.includes('[FILL]')) return;
+    items.push({
+      label: '',
+      value: lore.text,
+    });
+  });
+
   // Insert slogan after every 5th item
   const itemsWithSlogan: { label: string; value: string; isSlogan?: boolean }[] = [];
   items.forEach((item, index) => {
@@ -125,8 +140,28 @@ function generateTickerItems() {
 
 export default function Ticker() {
   const [sponsorIndex, setSponsorIndex] = useState(0);
+  const [komItems, setKomItems] = useState<{ label: string; value: string }[]>([]);
 
-  const tickerItems = useMemo(() => generateTickerItems(), []);
+  // Fetch KOM stats for ticker
+  useEffect(() => {
+    fetch('/api/ticker-stats')
+      .then(res => res.json())
+      .then(data => {
+        if (data.items && data.items.length > 0) {
+          setKomItems(data.items);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const tickerItems = useMemo(() => {
+    const items = generateTickerItems();
+    // Insert KOM items after position 3 if we have them
+    if (komItems.length > 0) {
+      items.splice(3, 0, ...komItems);
+    }
+    return items;
+  }, [komItems]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -175,11 +210,13 @@ export default function Ticker() {
               <div key={index} className="ticker-item">
                 {item.isSlogan ? (
                   <span className="ticker-slogan">{item.value}</span>
-                ) : (
+                ) : item.label ? (
                   <>
                     <span className="ticker-item-label">{item.label}:</span>
                     <span className="ticker-item-highlight">{item.value}</span>
                   </>
+                ) : (
+                  <span className="ticker-item-highlight">{item.value}</span>
                 )}
               </div>
             ))}

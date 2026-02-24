@@ -1,17 +1,33 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import ElevationProfile from './ElevationProfile';
+
+// Segment audio mapping - two versions per segment, pick randomly
+const SEGMENT_AUDIO: Record<string, string[]> = {
+  'hawk-hill': ['/segment_audio/hawk hill 01.mp3', '/segment_audio/hawk hill 02.mp3'],
+  'radio-road': ['/segment_audio/radio road 01.mp3', '/segment_audio/radio road 02.mp3'],
+  'old-la-honda': ['/segment_audio/old la honda 01.mp3', '/segment_audio/old la honda 02.mp3'],
+  'hwy1-muir-beach': ['/segment_audio/highway one.mp3', '/segment_audio/highway one 02.mp3'],
+  'alpe-dhuez': ["/segment_audio/alpe d'huez 01.mp3", "/segment_audio/alpe d'huez 02.mp3"],
+  'four-corners': ['/segment_audio/four corners 01.mp3', '/segment_audio/four corners 02.mp3'],
+  'bofax-climb': ['/segment_audio/Bofax 01.mp3', '/segment_audio/Bofax 02.mp3'],
+  'bourg-doisans': ["/segment_audio/bourg d'oisans 01.mp3", "/segment_audio/bourg d'oisans 02.mp3"],
+};
 
 interface LeaderboardEntry {
   rank: number;
   name: string | null;
+  rider_name?: string | null;
   date: string | null;
   time: string;
+  time_display?: string;
   speed: string | null;
   claimed: boolean;
+  status?: 'ghost' | 'claimed' | 'verified';
+  profile_pic?: string | null;
 }
 
 interface Segment {
@@ -20,17 +36,18 @@ interface Segment {
   strava_id: number;
   location: string;
   distance: { km: number; mi: number };
-  elevation: { gain_m: number; gain_ft: number };
+  elevation: { gain_m?: number; gain_ft: number };
   grade: number;
   category: string;
   clubMembers: number;
-  clubBestTime: string;
+  clubBestTime?: string;
   mission_cycling_leaderboard: LeaderboardEntry[];
 }
 
 interface LeaderboardCardProps {
   segment: Segment;
   isOpen?: boolean;
+  audioEnabled?: boolean;
 }
 
 function parseTimeToSeconds(time: string): number {
@@ -73,12 +90,44 @@ function getJerseyForRank(rank: number, claimed: boolean): string | null {
   }
 }
 
-export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardCardProps) {
+export default function LeaderboardCard({ segment, isOpen = true, audioEnabled = true }: LeaderboardCardProps) {
   const [phase, setPhase] = useState<'preview' | 'hero' | 'full'>('preview');
   const [visibleRows, setVisibleRows] = useState(0);
   const [previewStarted, setPreviewStarted] = useState(false);
   const [leaderboardStarted, setLeaderboardStarted] = useState(false);
   const leaderTime = segment.mission_cycling_leaderboard[0]?.time;
+  const segmentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Play segment name audio when card opens (if audio enabled)
+  useEffect(() => {
+    if (!isOpen || !audioEnabled) {
+      if (segmentAudioRef.current) {
+        segmentAudioRef.current.pause();
+        segmentAudioRef.current = null;
+      }
+      return;
+    }
+
+    const audioFiles = SEGMENT_AUDIO[segment.id];
+    if (!audioFiles || audioFiles.length === 0) return;
+
+    const audioSrc = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+
+    const playTimer = setTimeout(() => {
+      const audio = new Audio(audioSrc);
+      audio.volume = 0.25;
+      segmentAudioRef.current = audio;
+      audio.play().catch(console.error);
+    }, 400);
+
+    return () => {
+      clearTimeout(playTimer);
+      if (segmentAudioRef.current) {
+        segmentAudioRef.current.pause();
+        segmentAudioRef.current = null;
+      }
+    };
+  }, [isOpen, segment.id, audioEnabled]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -106,31 +155,26 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
     // 12s: Top 3 shrink into full leaderboard
     // 12.8s+: Rows 4-10 appear sequentially
 
-    // Wait for card to open before starting preview
     const previewTimer = setTimeout(() => {
       setPreviewStarted(true);
     }, 600);
 
-    // Transition from preview to hero phase
-    // Set leaderboardStarted BEFORE phase change so rows are ready
     const preLeaderboardTimer = setTimeout(() => {
       setLeaderboardStarted(true);
-    }, 6400); // Start rows animating slightly before phase change
+    }, 6400);
 
     const heroTimer = setTimeout(() => {
       setPhase('hero');
-    }, 6600); // 0.6s card open + 6s preview
+    }, 6600);
 
-    // Transition from hero to full phase
     const fullTimer = setTimeout(() => {
       setPhase('full');
-      // Pause to let top 3 settle, then reveal rows 4-10
       setTimeout(() => {
         for (let i = 4; i <= 10; i++) {
           setTimeout(() => setVisibleRows(i), (i - 4) * 200);
         }
       }, 800);
-    }, 12000); // hero phase lasts ~5.4s
+    }, 12000);
 
     return () => {
       clearTimeout(previewTimer);
@@ -158,6 +202,7 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
         transition={{ duration: 0.5, ease: 'easeInOut' }}
       >
         <ElevationProfile
+          segmentId={segment.id}
           distance={segment.distance.mi}
           elevation={segment.elevation.gain_ft}
           grade={segment.grade}
@@ -179,15 +224,23 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
         transition={{ duration: 0.5, ease: 'easeInOut' }}
       >
         {rowsToRender.map((entry, index) => {
-          const jerseyPath = getJerseyForRank(entry.rank, entry.claimed);
-          const gap = entry.rank > 1 && entry.claimed ? formatGap(leaderTime, entry.time) : '';
+          // Handle both old format (claimed) and new format (status)
+          const status = entry.status || (entry.claimed ? 'verified' : 'ghost');
+          const isGhost = status === 'ghost';
+          const isVerified = status === 'verified';
+          const displayName = entry.name || entry.rider_name;
+          const displayTime = entry.time_display || entry.time;
+
+          // Show jersey for any entry with a name (ghosts just get faded)
+          const hasName = !!displayName;
+          const jerseyPath = getJerseyForRank(entry.rank, hasName);
+          const gap = entry.rank > 1 && !isGhost ? formatGap(leaderTime, displayTime) : '';
           const isTopThree = entry.rank <= 3;
 
-          // Determine if this row should be visible
-          // Only show after leaderboard animation has started (after preview phase)
-          const shouldShow = leaderboardStarted && (isTopThree || (!isHero && visibleRows >= entry.rank));
+          // Ghost rows are faded
+          const rowOpacity = isGhost ? 0.5 : 1;
 
-          // Animation delay for top 3 slam-in (relative to animationStarted)
+          const shouldShow = leaderboardStarted && (isTopThree || (!isHero && visibleRows >= entry.rank));
           const slamDelay = isTopThree ? 0.2 + (index * 0.8) : 0;
 
           return (
@@ -197,7 +250,7 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
               initial={{ x: -500, opacity: 0 }}
               animate={{
                 x: shouldShow ? 0 : -500,
-                opacity: shouldShow ? 1 : 0,
+                opacity: shouldShow ? rowOpacity : 0,
                 scale: 1
               }}
               transition={{
@@ -212,23 +265,40 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
                 }
               }}
               style={{
-                // Dynamic grid and font size for hero vs full state
                 gridTemplateColumns: isHero ? '72px 40px 1fr auto auto auto' : '36px 24px 1fr auto auto auto',
                 fontSize: isHero && isTopThree ? '28px' : '20px',
                 transition: 'font-size 0.5s ease, grid-template-columns 0.5s ease'
               }}
             >
-              {/* Jersey */}
+              {/* Jersey or Profile Pic */}
               <div
                 className={`row-jersey ${!jerseyPath ? 'empty' : ''}`}
                 style={{
                   perspective: '500px',
                   width: isHero && isTopThree ? '72px' : '36px',
                   height: isHero && isTopThree ? '72px' : '36px',
-                  transition: 'width 0.5s ease, height 0.5s ease'
+                  transition: 'width 0.5s ease, height 0.5s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                {jerseyPath && isTopThree ? (
+                {isVerified && entry.profile_pic ? (
+                  // Verified user with profile pic
+                  <Image
+                    src={entry.profile_pic}
+                    alt=""
+                    width={isHero && isTopThree ? 56 : 28}
+                    height={isHero && isTopThree ? 56 : 28}
+                    className="rounded-full object-cover"
+                    style={{
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      width: isHero && isTopThree ? '56px' : '28px',
+                      height: isHero && isTopThree ? '56px' : '28px',
+                      transition: 'width 0.5s ease, height 0.5s ease',
+                    }}
+                  />
+                ) : jerseyPath && isTopThree ? (
                   <motion.div
                     initial={{ rotateY: (entry.rank - 1) * 120 }}
                     animate={{ rotateY: (entry.rank - 1) * 120 + 360 }}
@@ -260,6 +330,18 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
                     height={32}
                     className="object-contain"
                   />
+                ) : !hasName ? (
+                  // Unclaimed placeholder (no name at all)
+                  <div
+                    className="rounded-full"
+                    style={{
+                      width: isHero && isTopThree ? '56px' : '28px',
+                      height: isHero && isTopThree ? '56px' : '28px',
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      transition: 'width 0.5s ease, height 0.5s ease',
+                    }}
+                  />
                 ) : null}
               </div>
 
@@ -276,13 +358,27 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
 
               {/* Name */}
               <span
-                className={`row-name ${!entry.claimed ? 'unclaimed' : ''}`}
+                className={`row-name ${isGhost ? 'unclaimed' : ''}`}
                 style={{
                   fontSize: isHero && isTopThree ? '28px' : '20px',
-                  transition: 'font-size 0.5s ease'
+                  transition: 'font-size 0.5s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
               >
-                {entry.claimed ? entry.name : '[ Unclaimed ]'}
+                {displayName || '[ Unclaimed ]'}
+                {isVerified && (
+                  <svg
+                    className="flex-shrink-0"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="#FC4C02"
+                  >
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                  </svg>
+                )}
               </span>
 
               {/* Time */}
@@ -293,7 +389,7 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
                   transition: 'font-size 0.5s ease'
                 }}
               >
-                {entry.time}
+                {displayTime}
               </span>
 
               {/* Gap - only show in full state */}
@@ -311,7 +407,7 @@ export default function LeaderboardCard({ segment, isOpen = true }: LeaderboardC
                 animate={{ opacity: isHero ? 0 : 1 }}
                 transition={{ duration: 0.3 }}
               >
-                {entry.claimed ? formatDate(entry.date) : ''}
+                {!isGhost ? formatDate(entry.date) : ''}
               </motion.span>
             </motion.div>
           );

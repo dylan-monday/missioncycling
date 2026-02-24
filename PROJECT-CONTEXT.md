@@ -4,7 +4,8 @@
 
 A broadcast-style leaderboard display for Mission Cycling, a San Francisco cycling club, showcasing their 2008-2022 era. The design mimics 1988 CBS Sports Sunday aesthetics with a TV broadcast feel.
 
-**Live at:** `http://localhost:3000` (run `npm run dev`)
+**Live at:** https://missioncyclingorg.vercel.app
+**Repo:** https://github.com/dylan-monday/missioncycling
 
 ---
 
@@ -28,7 +29,26 @@ A broadcast-style leaderboard display for Mission Cycling, a San Francisco cycli
 - **Styling:** Tailwind CSS 3.4
 - **Animations:** Framer Motion
 - **Language:** TypeScript
-- **Data:** Local JSON files (Strava API integration planned)
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Strava OAuth
+- **Deployment:** Vercel
+
+---
+
+## Architecture: The Hybrid Model
+
+Strava removed public segment leaderboards from their API. Each user who authenticates via OAuth only grants access to **their own** data.
+
+**Our approach: Ghost leaderboard + crowdsourced verification.**
+
+| Layer | Source | When |
+|---|---|---|
+| Ghost leaderboard | Scraped Strava screenshots → Supabase | Seeded, hidden from display |
+| Verified entries | Individual OAuth → user's best segment efforts | Each user login |
+| Activity history | Individual OAuth → all user rides (2008-2019) | Each user login |
+| Greatest Hits | Generated from user's activity + effort data | After each sync |
+
+**Key Decision:** Leaderboards ONLY show verified entries. Ghost entries stay in Supabase but are hidden from display. Empty slots appear as "[ UNCLAIMED ]".
 
 ---
 
@@ -36,118 +56,166 @@ A broadcast-style leaderboard display for Mission Cycling, a San Francisco cycli
 
 ```
 /app
-  /page.tsx              — Main broadcast display
-  /admin/page.tsx        — Admin panel (segment visibility toggles)
-  /layout.tsx            — Root layout
-  /globals.css           — Global styles, CRT effects, animations
+  /page.tsx                    — Main orchestrator (splash → auth → sync → hits → broadcast)
+  /admin/page.tsx              — Admin panel (segment visibility toggles)
+  /test-commercial/page.tsx    — Commercial break testing
+  /layout.tsx                  — Root layout with Typekit fonts
+  /globals.css                 — Global styles, card, ticker, splash animations
+
+  /api
+    /auth/strava/route.ts      — Initiates Strava OAuth redirect
+    /auth/callback/route.ts    — Handles OAuth callback, creates user
+    /user/me/route.ts          — Returns authenticated user + sync progress
+    /sync/route.ts             — Background sync (efforts + activities)
+    /segments/route.ts         — Returns segments with verified leaderboards
+    /greatest-hits/me/route.ts — Returns user's generated greatest hits
+    /migrate-ghosts/route.ts   — One-time ghost migration
 
 /components
-  /BroadcastBackground.tsx  — Background image + gradient overlays
-  /ScanLines.tsx            — CRT scan line effects
-  /Leaderboard.tsx          — Main leaderboard with animation phases
-  /LeaderboardRow.tsx       — Individual row with phase-aware animations
-  /SegmentSelector.tsx      — Tab buttons to switch segments
-
-/data
-  /club.json             — Club metadata (name, tagline, member count)
-  /segments.json         — All segments with leaderboard data
+  /SplashScreen.tsx            — Gated mode with Strava button
+  /SyncSequence.tsx            — Sync progress with animated counters
+  /GreatestHitsReveal.tsx      — Post-sync personal highlights
+  /LeaderboardCard.tsx         — Main segment display (preview + leaderboard)
+  /LeaderboardRow.tsx          — Individual row with phase-aware animations
+  /ElevationProfile.tsx        — Animated SVG elevation chart
+  /Ticker.tsx                  — Bottom scrolling ticker
+  /CommercialBreak.tsx         — Sponsor breaks between segments
 
 /lib
-  /parseMarkdown.ts      — Utility types/functions for data parsing
+  /supabase.ts                 — Supabase client (server + browser)
+  /sync.ts                     — Full sync logic with progress reporting
+  /strava.ts                   — Strava API wrappers + token management
+  /greatest-hits.ts            — Personal superlative generator
+  /leaderboard.ts              — Ghost→verified, rank calculation
+  /ticker-stories.ts           — Tier 1/2/3 story generators
+  /weather.ts                  — Open-Meteo historical weather
+  /sequence.ts                 — Broadcast sequence builder
+
+/data
+  /segments.json               — All segment data (8 segments)
+  /club-lore.ts                — Tier 3 curated stories
+
+/types
+  /index.ts                    — All TypeScript types
 
 /public
-  /mc_logo.svg           — Mission Cycling logo (horizontal)
-  /mc_emblem.svg         — Mission Cycling emblem (circular)
-  /hawkhill.jpg          — Background image
-  /jersey_white.png      — 1st place jersey
-  /jersey_green.png      — 2nd place jersey
-  /jersey_black_blue.png — 3rd place jersey
-  /jersey_black.png      — 4th+ place jersey
-
-/_assets                 — Source assets (not served)
-/_scraped info           — Original Strava data scrape + screenshots
+  /video/                      — Background videos (~10-28MB each)
+  /sponsors/                   — Sponsor logos (transparent PNGs)
+  /sponsors/_audio/            — Sponsor voiceover clips
+  /segment_audio/              — Segment voiceover clips
+  /*.mp3                       — Background music (3 tracks)
 ```
 
 ---
 
-## Data Sources
+## Onboarding Flow (Gated Mode)
 
-### Club Info (`/data/club.json`)
-- Club ID: 15
-- Name: Mission Cycling
-- Location: San Francisco, CA
-- Tagline: "The sexiest cycling club on 18th Street."
-- Members: 161
-- Era: 2008-2022
+### Complete User Journey
 
-### Segments (`/data/segments.json`)
-Each segment has:
-- `id`, `name`, `strava_id`, `url`, `location`
-- `distance` (km/mi), `elevation` (gain, lowest, highest)
-- `grade`, `category` (Cat 4, Cat 3, HC)
-- `clubMembers`, `clubBestTime`
-- `visible` (toggle for admin)
-- `mission_cycling_leaderboard[]` — array of entries
-
-### Leaderboard Entry Shape
-```typescript
-{
-  rank: number;
-  name: string | null;      // null = unclaimed
-  date: string | null;
-  time: string;             // "8:23" or "1:06:08"
-  speed: string | null;
-  claimed: boolean;
-}
 ```
+1. SPLASH SCREEN
+   - Black background, MC logo centered
+   - "PREMIUM SUFFERING SINCE 2008"
+   - [ Connect with Strava ] button (orange #FC4C02)
+   - Mobile: "desktop required" message
 
-### Current Segments
-1. **Hawk Hill** (Cat 4) — Marin Headlands, 1.65mi, 511ft, 6.8%
-2. **Radio Road from Underpass** (Cat 3) — San Bruno Mountain, 1.49mi, 563ft, 7.2%
-3. **Old La Honda Road** (Cat 3) — Woodside, 3.0mi, 1290ft, 7.3%
-4. **Hwy 1 Climb from Muir Beach** (Cat 3) — Marin County, 1.91mi, 694ft, 6.0%
-5. **Alpe d'Huez** (HC) — France, 7.47mi, 3436ft, 8.8%
+2. STRAVA OAUTH
+   - Redirect to Strava → authorize → callback
+   - Create/update user in Supabase
+   - Set mc_session cookie
+   - Start background sync
+
+3. WELCOME SCREEN (2-3 seconds)
+   - Profile pic fades in (from Strava)
+   - "Welcome back, [First Name]"
+   - "[City], [State]"
+
+4. SYNC SEQUENCE (30-90 seconds)
+   - Ambient audio: sync soundtrack 3.mp3
+   - Progress bar with animated counters
+   - Real-time messages: "Scanning Hawk Hill..." → "47 attempts. Best: 7:42"
+   - Segment efforts + activities fetched from Strava
+   - Greatest Hits generated at end
+
+5. GREATEST HITS REVEAL
+   - "YOUR GREATEST HITS" title (2.5s)
+   - 3-5 personalized stat cards (4.5s each)
+   - [skip] button available
+   - Crossfade between cards
+
+6. BROADCAST MODE
+   - Background music starts (random track)
+   - First segment loads with voiceover
+   - Full leaderboard rotation begins
+   - Commercial breaks every 2-3 segments
+```
 
 ---
 
-## Features Implemented
+## Leaderboard System
 
-### Main Display (`/`)
-- [x] 16:9 fixed aspect ratio (letterboxed)
-- [x] Background image with gradient overlays
-- [x] CRT scan lines (static + moving)
-- [x] Segment selector tabs
-- [x] Auto-advance segments every 30 seconds
-- [x] Click anywhere to advance to next segment
-- [x] Strava CTA button (placeholder, links to #)
+### Entry States
+| Status | Look | How it gets there |
+|---|---|---|
+| **Ghost** | Hidden from display | Scraped data, in DB only |
+| **Verified** | Full color, profile pic, checkmark | User's Strava effort confirms |
+| **Unclaimed** | "[ UNCLAIMED ]" gray text | Empty slot in top 10 |
 
-### Leaderboard Animations
-- [x] Dramatic segment title entrance (slam + blur + glow)
-- [x] Stats slide in from right
-- [x] Category badge pops in
-- [x] **Top 3 appear sequentially, BIGGER** (1.25x scale, 500ms stagger)
-- [x] **Pause**, then top 3 shrink to normal
-- [x] Rows 4-10 appear sequentially (120ms stagger)
-- [x] Club record bar fades in last
+### Display Rules
+- Fetch leaderboard WHERE status = 'verified'
+- Always show 10 rows (fill with unclaimed if fewer verified)
+- Calculate ranks and time gaps dynamically
+- Show profile pics for verified entries
 
-### Row Styling
-- [x] Jersey icons by rank:
-  - 1st: White jersey
-  - 2nd: Green jersey
-  - 3rd: Black/blue jersey
-  - 4th+: Black jersey
-  - Unclaimed: No jersey
-- [x] Leader row: Yellow background + "LEADER" badge
-- [x] Top 3: White/transparent gradient background
-- [x] Unclaimed: "[ UNCLAIMED ]" in gray
-- [x] Time gaps calculated from leader
-- [x] Italic names with 2px black outline text-shadow
+---
 
-### Admin Panel (`/admin`)
-- [x] List all segments
-- [x] Toggle visibility per segment
-- [x] Preview segment title styling
-- [x] Add segment by Strava ID (local state only)
+## Commercial Breaks
+
+Plays between every 2-3 segments:
+
+1. **Intro clip** (random from 2 variations)
+2. **"Sponsored by"** transition audio
+3. **2-3 sponsor logos** with individual voiceover reads
+4. Crossfade transitions between sponsors
+
+### Audio Assets (`/public/sponsors/_audio/`)
+- Intros: `Mission cycling.mp3`, `The Mission Cycling Club of San Francisco.mp3`
+- Transition: `sponsored by.mp3`
+- Conjunctions: `and 01.mp3`, `and 02.mp3`, `and 03.mp3`
+- 19 individual sponsor reads
+
+---
+
+## Segment Audio
+
+Each segment has 2 voiceover variations in `/public/segment_audio/`:
+```
+hawk hill 01.mp3, hawk hill 02.mp3
+radio road 01.mp3, radio road 02.mp3
+old la honda 01.mp3, old la honda 02.mp3
+highway one 01.mp3, highway one 02.mp3
+four corners 01.mp3, four corners 02.mp3
+Bofax 01.mp3, Bofax 02.mp3
+bourg d'oisans 01.mp3, bourg d'oisans 02.mp3
+alpe d'huez 01.mp3, alpe d'huez 02.mp3
+```
+
+Also: `sync soundtrack 1.mp3`, `sync soundtrack 2.mp3`, `sync soundtrack 3.mp3`
+
+---
+
+## Current Segments (8 total)
+
+| # | Segment | Strava ID | Category | Distance | Elevation | Grade |
+|---|---------|-----------|----------|----------|-----------|-------|
+| 1 | Hawk Hill | 229781 | Cat 4 | 1.65mi | 511ft | 6.8% |
+| 2 | Radio Road | 241885 | Cat 3 | 1.49mi | 563ft | 7.2% |
+| 3 | Old La Honda | 8109834 | Cat 2 | 3.13mi | 1275ft | 7.8% |
+| 4 | Hwy 1 from Muir Beach | 4793848 | Cat 3 | 1.91mi | 694ft | 6.0% |
+| 5 | Alpe d'Huez | 652851 | HC | 7.47mi | 3436ft | 8.8% |
+| 6 | Four Corners | TBD | Cat 3 | 2.12mi | 822ft | 5.4% |
+| 7 | BoFax Climb | TBD | Cat 2 | 3.93mi | 1486ft | 7.1% |
+| 8 | Bourg d'Oisans | TBD | Cat 4 | 7.73mi | 813ft | 1.6% |
 
 ---
 
@@ -171,22 +239,67 @@ Each segment has:
 
 ---
 
-## CRT/Broadcast Effects
+## Database Schema (Supabase)
 
-### In `globals.css`
-- `.broadcast-frame::before` — Horizontal scan lines (2px interval, 0.3 opacity)
-- `.broadcast-frame::after` — Vignette + RGB fringing
+### Core Tables
+- `users` — Strava athletes with tokens, sync status, profile data
+- `activities` — User ride history (strava_activity_id, distance, time, elevation, date)
+- `segment_efforts` — Best times per user per segment (elapsed_time, pr_rank)
+- `leaderboard_entries` — Verified leaderboard rows (status: ghost/verified, rank, time)
+- `greatest_hits` — Generated personal superlatives (title, stat_value, description)
+- `ticker_stories` — Generated ticker content (tier, text, segment_id)
+- `weather_daily` — Historical SF weather for Tier 2 stats
 
-### In `ScanLines.tsx`
-- Moving scan line bar (8px, sweeps down every 6s)
-- CRT flicker (2% opacity variation)
-- Phosphor glow simulation
+### Key Fields on `users`
+```typescript
+{
+  id: uuid,
+  strava_id: number,
+  name: string,
+  first_name: string,
+  profile_pic: string,
+  city: string,
+  state: string,
+  access_token: string,
+  refresh_token: string,
+  token_expires_at: timestamp,
+  sync_status: 'pending' | 'syncing' | 'complete',
+  sync_progress: jsonb,
+  total_rides: number,
+  total_distance_mi: number,
+  total_elevation_ft: number,
+  member_since: date,
+  last_ride: date
+}
+```
 
-### In `BroadcastBackground.tsx`
-- Background image (`/hawkhill.jpg`)
-- Left-to-right dark gradient (for text readability)
-- Warm broadcast color wash (red top-left, blue bottom-right)
-- CRT vignette
+---
+
+## Environment Variables
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
+SUPABASE_SERVICE_ROLE_KEY=<service role key>
+STRAVA_CLIENT_ID=60
+STRAVA_CLIENT_SECRET=<secret>
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_GATE_MODE=gated
+```
+
+---
+
+## Related Documentation
+
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Quick reference for Claude Code sessions |
+| `BACKLOG_V2.md` | Full implementation plan, session guide |
+| `AUTH_UX_SPEC.md` | Detailed onboarding/auth flow spec |
+| `COMMERCIAL_BREAK_SPEC.md` | Sponsor break specifications |
+| `STAT_CATALOG.md` | All computable stats (Greatest Hits, Ticker) |
+| `CC_SESSION_ONBOARDING.md` | Onboarding implementation details |
+| `CONTENT_PLAN.md` | Interstitials, club lore, asset inventory |
 
 ---
 
@@ -202,8 +315,8 @@ npm run dev
 # Build for production
 npm run build
 
-# Start production server
-npm run start
+# Test onboarding flow (demo mode)
+http://localhost:3000?demo
 ```
 
 ---
@@ -211,49 +324,23 @@ npm run start
 ## TODO / Future Work
 
 ### Data
-- [ ] Parse full leaderboard data from screenshot PNGs
-- [ ] Wire up Strava OAuth for "Claim Your Spot"
-- [ ] Fetch real segment data via Strava API
-- [ ] Persist admin changes to JSON files
+- [ ] Weather data seed (Open-Meteo historical fetch)
+- [ ] Tier 2 ticker stories (weather crossovers)
+- [ ] Missing Strava IDs (Four Corners, BoFax, Bourg d'Oisans)
 
 ### Features
-- [ ] Keyboard navigation (arrow keys to change segments)
-- [ ] Sound effects for animations (optional)
-- [ ] Full-screen mode button
-- [ ] Segment-specific background images
-- [ ] Weekly leaderboard view
-- [ ] Member profile pages
+- [ ] Find Me view (user's rank + surrounding riders)
+- [ ] Club intro sequence (first-time cinematic)
+- [ ] Aggregate leaderboards (KOM standings, Iron Rider)
+- [ ] Keyboard navigation (arrows, space, F for fullscreen)
+- [ ] Kiosk mode for event display
 
 ### Polish
 - [ ] Loading state between segments
-- [ ] Exit animations when leaving segment
 - [ ] More VHS artifacts (tracking lines, color bleed)
 - [ ] "LIVE" indicator animation
+- [ ] Mobile-optimized version
 
 ---
 
-## Brand Assets
-
-| Asset | Path | Notes |
-|-------|------|-------|
-| Logo (horizontal) | `/public/mc_logo.svg` | "SF" text with cycling figure |
-| Emblem (circular) | `/public/mc_emblem.svg` | Full wordmark in circle |
-| Background | `/public/hawkhill.jpg` | Hawk Hill climb photo |
-| White jersey | `/public/jersey_white.png` | 1st place |
-| Green jersey | `/public/jersey_green.png` | 2nd place |
-| Black/blue jersey | `/public/jersey_black_blue.png` | 3rd place |
-| Black jersey | `/public/jersey_black.png` | 4th and below |
-
----
-
-## Original Data Source
-
-See `/_scraped info/mission-cycling-data.md` for the full Strava data capture including:
-- Club overview and metadata
-- Global leaderboards for each segment
-- Club-filtered leaderboard data (from authenticated screenshots)
-- Screenshot file index
-
----
-
-*Last updated: 2026-02-19*
+*Last updated: February 22, 2026*
