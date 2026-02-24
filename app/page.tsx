@@ -235,6 +235,9 @@ export default function Home() {
 
   // Handle sync completion
   const handleSyncComplete = useCallback(async () => {
+    // Mark that we want to start audio when greatest_hits loads
+    shouldStartHighlightsAudioRef.current = true;
+
     // Fetch greatest hits
     try {
       const response = await fetch('/api/greatest-hits/me');
@@ -266,6 +269,20 @@ export default function Home() {
 
   // Handle broadcast intro button click
   const handleStartBroadcast = useCallback(() => {
+    // Fade out highlights audio before starting broadcast
+    if (highlightsAudioRef.current && !highlightsAudioRef.current.paused) {
+      const audio = highlightsAudioRef.current;
+      const fadeOut = setInterval(() => {
+        if (audio.volume > 0.02) {
+          audio.volume = Math.max(0, audio.volume - 0.02);
+        } else {
+          clearInterval(fadeOut);
+          audio.pause();
+          audio.volume = 0.15; // Reset for potential reuse
+        }
+      }, 50);
+    }
+
     setAppState('broadcast');
     // Music will start via useEffect when broadcast state loads
     setTimeout(() => setIsCardOpen(true), INITIAL_DELAY);
@@ -298,14 +315,13 @@ export default function Home() {
     window.location.href = '/api/auth/strava';
   }, []);
 
+  // Track if we should start highlights audio
+  const shouldStartHighlightsAudioRef = useRef(false);
+
   // Handle continue click from splash (returning synced users)
   const handleContinue = useCallback(async () => {
-    // Start highlights audio immediately on user click (browser allows this)
-    if (highlightsAudioRef.current) {
-      highlightsAudioRef.current.volume = 0.15;
-      highlightsAudioRef.current.loop = true;
-      highlightsAudioRef.current.play().catch(() => {});
-    }
+    // Mark that we want to start audio (will be triggered by useEffect once audio element exists)
+    shouldStartHighlightsAudioRef.current = true;
 
     // Fetch greatest hits for returning user
     try {
@@ -319,6 +335,18 @@ export default function Home() {
     }
     setAppState('greatest_hits');
   }, []);
+
+  // Start highlights audio when entering greatest_hits state
+  useEffect(() => {
+    if (appState === 'greatest_hits' && shouldStartHighlightsAudioRef.current && highlightsAudioRef.current) {
+      highlightsAudioRef.current.volume = 0.15;
+      highlightsAudioRef.current.loop = true;
+      highlightsAudioRef.current.play().catch((e) => {
+        console.log('[Home] Highlights audio play failed:', e);
+      });
+      shouldStartHighlightsAudioRef.current = false;
+    }
+  }, [appState]);
 
   // =============================================================================
   // Broadcast Logic (unchanged from before)
@@ -415,12 +443,20 @@ export default function Home() {
   // Render
   // =============================================================================
 
+  // Highlights audio element (always rendered so ref is available)
+  const highlightsAudio = (
+    <audio ref={highlightsAudioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" style={{ display: 'none' }} />
+  );
+
   // Loading state
   if (appState === 'loading') {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        <div className="text-white/50 text-sm">Loading...</div>
-      </div>
+      <>
+        {highlightsAudio}
+        <div className="fixed inset-0 bg-black flex items-center justify-center">
+          <div className="text-white/50 text-sm">Loading...</div>
+        </div>
+      </>
     );
   }
 
@@ -428,26 +464,31 @@ export default function Home() {
   if (appState === 'splash' || appState === 'authenticating') {
     const isReturningUser = !!(user && user.sync_status === 'complete');
     return (
-      <SplashScreen
-        onStravaAuth={handleStravaAuth}
-        isAuthenticating={appState === 'authenticating'}
-        onContinue={handleContinue}
-        userName={user?.first_name || null}
-        isReturningUser={isReturningUser}
-      />
+      <>
+        {highlightsAudio}
+        <SplashScreen
+          onStravaAuth={handleStravaAuth}
+          isAuthenticating={appState === 'authenticating'}
+          onContinue={handleContinue}
+          userName={user?.first_name || null}
+          isReturningUser={isReturningUser}
+        />
+      </>
     );
   }
 
   // Welcome screen
   if (appState === 'welcome' && user) {
     return (
-      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col items-center"
-        >
+      <>
+        {highlightsAudio}
+        <div className="fixed inset-0 bg-black flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center"
+          >
           {user.profile_pic && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -483,20 +524,26 @@ export default function Home() {
             </motion.p>
           )}
         </motion.div>
-      </div>
+        </div>
+      </>
     );
   }
 
   // Sync sequence
   if (appState === 'syncing') {
-    return <SyncSequence user={user} onComplete={handleSyncComplete} />;
+    return (
+      <>
+        {highlightsAudio}
+        <SyncSequence user={user} onComplete={handleSyncComplete} />
+      </>
+    );
   }
 
   // Greatest hits reveal
   if (appState === 'greatest_hits') {
     return (
       <>
-        <audio ref={highlightsAudioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" />
+        {highlightsAudio}
         <GreatestHitsReveal
           hits={greatestHits}
           onComplete={handleGreatestHitsComplete}
@@ -510,23 +557,26 @@ export default function Home() {
   // Broadcast intro - button to start (ensures audio can play)
   if (appState === 'broadcast_intro') {
     return (
-      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
-          <button
-            onClick={handleStartBroadcast}
-            className="group cursor-pointer bg-transparent border-2 border-[#BAE0F7] text-[#BAE0F7] px-12 py-6 hover:bg-[#BAE0F7] hover:text-black transition-all duration-300 flex flex-col items-center"
-            style={{ fontFamily: 'tablet-gothic, sans-serif' }}
+      <>
+        {highlightsAudio}
+        <div className="fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
           >
-            <span className="text-3xl uppercase tracking-widest">Wake Up and Climb</span>
-            <span className="text-sm uppercase tracking-wider mt-2 opacity-60">Let&apos;s Begin</span>
-          </button>
-        </motion.div>
-      </div>
+            <button
+              onClick={handleStartBroadcast}
+              className="group cursor-pointer bg-transparent border-2 border-[#BAE0F7] text-[#BAE0F7] px-12 py-6 hover:bg-[#BAE0F7] hover:text-black transition-all duration-300 flex flex-col items-center"
+              style={{ fontFamily: 'tablet-gothic, sans-serif' }}
+            >
+              <span className="text-3xl uppercase tracking-widest">Wake Up and Climb</span>
+              <span className="text-sm uppercase tracking-wider mt-2 opacity-60">Let&apos;s Begin</span>
+            </button>
+          </motion.div>
+        </div>
+      </>
     );
   }
 

@@ -38,8 +38,9 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
     }
 
     return () => {
-      // Fade out audio on unmount
-      if (audioRef.current) {
+      // Only fade out audio on unmount if we own it
+      // If using external audio ref, let the parent manage the lifecycle
+      if (ownsAudio && audioRef.current) {
         const audio = audioRef.current;
         const fadeOut = setInterval(() => {
           if (audio.volume > 0.01) {
@@ -134,7 +135,7 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
 
   return (
     <motion.div
-      className="fixed inset-0 bg-black flex items-center justify-center"
+      className="fixed inset-0 bg-black flex items-center justify-center z-50"
       animate={{
         opacity: phase === 'fadeout' ? 0 : 1,
       }}
@@ -171,7 +172,7 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
               duration: 0.5,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="text-center px-8 max-w-xl"
+            className="text-center px-8 max-w-xl relative"
           >
             {/* Title */}
             <motion.h2
@@ -204,30 +205,25 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
             >
               {currentHit.description}
             </motion.p>
-
-            {/* Card counter with skip */}
-            {displayHits.length > 1 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 text-sm"
-              >
-                <span className="text-white/30">
-                  {currentHitIndex + 1} of {displayHits.length}
-                </span>
-                <button
-                  onClick={handleSkip}
-                  className="text-white/50 hover:text-white/80 transition-colors tracking-wide"
-                  style={{ fontFamily: 'tablet-gothic, sans-serif' }}
-                >
-                  [skip]
-                </button>
-              </motion.div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Card counter with skip - outside AnimatePresence for stability */}
+      {phase === 'cards' && displayHits.length > 1 && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 text-sm">
+          <span className="text-white/30">
+            {currentHitIndex + 1} of {displayHits.length}
+          </span>
+          <button
+            onClick={handleSkip}
+            className="text-white/50 hover:text-white/80 transition-colors tracking-wide"
+            style={{ fontFamily: 'tablet-gothic, sans-serif' }}
+          >
+            [skip]
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
