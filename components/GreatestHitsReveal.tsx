@@ -22,6 +22,31 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
   const [currentHitIndex, setCurrentHitIndex] = useState(0);
   const hasCompletedRef = useRef(false);
   const hasInteractedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Start ambient audio on mount
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.15;
+      audioRef.current.loop = true;
+      audioRef.current.play().catch(() => {});
+    }
+
+    return () => {
+      // Fade out audio on unmount
+      if (audioRef.current) {
+        const audio = audioRef.current;
+        const fadeOut = setInterval(() => {
+          if (audio.volume > 0.01) {
+            audio.volume = Math.max(0, audio.volume - 0.02);
+          } else {
+            clearInterval(fadeOut);
+            audio.pause();
+          }
+        }, 50);
+      }
+    };
+  }, []);
 
   const handleSkip = () => {
     // Trigger user interaction callback (for music)
@@ -110,6 +135,8 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
       }}
       transition={{ duration: 1 }}
     >
+      {/* Ambient audio (continues from sync) */}
+      <audio ref={audioRef} src="/segment_audio/sync soundtrack 3.mp3" preload="auto" />
       <AnimatePresence mode="wait">
         {/* Title phase */}
         {phase === 'title' && displayHits.length > 0 && (
@@ -122,7 +149,7 @@ export default function GreatestHitsReveal({ hits, onComplete, onUserInteraction
             className="text-white text-4xl tracking-widest"
             style={{ fontFamily: 'tablet-gothic, sans-serif' }}
           >
-            YOUR GREATEST HITS
+            YOUR HIGHLIGHTS
           </motion.h1>
         )}
 

@@ -266,9 +266,20 @@ export default function Home() {
   // Handle broadcast intro button click
   const handleStartBroadcast = useCallback(() => {
     setAppState('broadcast');
-    startMusic();
+    // Music will start via useEffect when broadcast state loads
     setTimeout(() => setIsCardOpen(true), INITIAL_DELAY);
-  }, [startMusic]);
+  }, []);
+
+  // Auto-start music when entering broadcast state
+  useEffect(() => {
+    if (appState === 'broadcast' && audioRef.current && !audioStartedRef.current) {
+      audioRef.current.volume = 0.11;
+      audioRef.current.play().catch(() => {
+        console.log('[Home] Autoplay blocked, waiting for interaction');
+      });
+      audioStartedRef.current = true;
+    }
+  }, [appState]);
 
   // Handle user interaction during greatest hits (for starting music)
   const handleGreatestHitsInteraction = useCallback(() => {
