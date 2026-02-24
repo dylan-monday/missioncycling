@@ -8,9 +8,12 @@ interface SplashScreenProps {
   onStravaAuth?: () => void;
   isAuthenticating?: boolean;
   onStart?: () => void; // Legacy prop for ungated mode
+  onContinue?: () => void; // For returning synced users
+  userName?: string | null; // Show personalized greeting for returning users
+  isReturningUser?: boolean;
 }
 
-export default function SplashScreen({ onStravaAuth, isAuthenticating, onStart }: SplashScreenProps) {
+export default function SplashScreen({ onStravaAuth, isAuthenticating, onStart, onContinue, userName, isReturningUser }: SplashScreenProps) {
   const [isMobile, setIsMobile] = useState(false);
   const isGatedMode = process.env.NEXT_PUBLIC_GATE_MODE === 'gated';
 
@@ -71,6 +74,70 @@ export default function SplashScreen({ onStravaAuth, isAuthenticating, onStart }
               Grab a laptop, turn up the sound, and come back.
             </p>
           </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Returning synced user - show welcome back and continue
+  if (isReturningUser && onContinue) {
+    return (
+      <motion.div
+        className="splash-screen"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+      >
+        <div className="splash-content">
+          <motion.div
+            className="splash-logo"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <Image
+              src="/mc_logo.svg"
+              alt="Mission Cycling"
+              width={180}
+              height={180}
+              className="object-contain"
+            />
+          </motion.div>
+
+          <motion.p
+            className="splash-tagline"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            PREMIUM SUFFERING SINCE 2008
+          </motion.p>
+
+          {userName && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+              className="text-white/70 text-lg mt-4"
+              style={{ fontFamily: 'tablet-gothic, sans-serif' }}
+            >
+              Welcome back, {userName}.
+            </motion.p>
+          )}
+
+          <motion.button
+            onClick={onContinue}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="mt-8 bg-transparent border-2 border-[#BAE0F7] text-[#BAE0F7] px-10 py-4 hover:bg-[#BAE0F7] hover:text-black transition-all duration-300 flex flex-col items-center"
+            style={{ fontFamily: 'tablet-gothic, sans-serif' }}
+          >
+            <span className="text-2xl uppercase tracking-widest">Wake Up and Climb</span>
+            <span className="text-xs uppercase tracking-wider mt-1 opacity-60">Continue</span>
+          </motion.button>
         </div>
       </motion.div>
     );

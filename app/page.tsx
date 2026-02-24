@@ -147,10 +147,8 @@ export default function Home() {
 
   useEffect(() => {
     async function checkSession() {
-      // Check for demo mode (?demo in URL forces intro sequence)
       // Check for skip mode (?skip goes straight to broadcast)
       const urlParams = new URLSearchParams(window.location.search);
-      const demoMode = urlParams.has('demo');
       const skipMode = urlParams.has('skip');
 
       try {
@@ -159,33 +157,27 @@ export default function Home() {
           const userData = await response.json();
           setUser(userData);
 
-          // Skip mode: go straight to broadcast (bypasses sync entirely)
+          // Skip mode: go straight to broadcast (bypasses everything)
           if (skipMode) {
             console.log('[Home] Skip mode: going straight to broadcast');
             setAppState('broadcast');
             return;
           }
 
-          // Demo mode: force welcome → sync → greatest hits flow
-          if (demoMode) {
-            console.log('[Home] Demo mode: forcing intro sequence');
-            setAppState('welcome');
+          // Check if sync is in progress
+          if (userData.sync_status === 'syncing') {
+            // Resume sync in progress
+            console.log('[Home] Resuming sync in progress');
+            setAppState('syncing');
             return;
           }
 
-          // Determine initial state based on sync status
-          if (userData.sync_status === 'complete') {
-            // User already synced, go to broadcast
-            setAppState('broadcast');
-          } else if (userData.sync_status === 'syncing') {
-            // Resume sync in progress
-            setAppState('syncing');
-          } else {
-            // New user or pending sync, show welcome then start sync
-            setAppState('welcome');
-          }
+          // User exists - always show splash first, then check their status
+          // Splash will show "Welcome back" for returning users
+          console.log('[Home] User found, showing splash');
+          setAppState('splash');
         } else {
-          // No valid session, show splash
+          // No valid session, show splash for new user
           setAppState('splash');
         }
       } catch (error) {
@@ -294,6 +286,21 @@ export default function Home() {
     window.location.href = '/api/auth/strava';
   }, []);
 
+  // Handle continue click from splash (returning synced users)
+  const handleContinue = useCallback(async () => {
+    // Fetch greatest hits for returning user
+    try {
+      const response = await fetch('/api/greatest-hits/me');
+      if (response.ok) {
+        const hits = await response.json();
+        setGreatestHits(hits);
+      }
+    } catch (error) {
+      console.error('[Home] Failed to fetch greatest hits:', error);
+    }
+    setAppState('greatest_hits');
+  }, []);
+
   // =============================================================================
   // Broadcast Logic (unchanged from before)
   // =============================================================================
@@ -400,7 +407,16 @@ export default function Home() {
 
   // Splash screen (gated mode)
   if (appState === 'splash' || appState === 'authenticating') {
-    return <SplashScreen onStravaAuth={handleStravaAuth} isAuthenticating={appState === 'authenticating'} />;
+    const isReturningUser = !!(user && user.sync_status === 'complete');
+    return (
+      <SplashScreen
+        onStravaAuth={handleStravaAuth}
+        isAuthenticating={appState === 'authenticating'}
+        onContinue={handleContinue}
+        userName={user?.first_name || null}
+        isReturningUser={isReturningUser}
+      />
+    );
   }
 
   // Welcome screen
@@ -474,10 +490,11 @@ export default function Home() {
         >
           <button
             onClick={handleStartBroadcast}
-            className="group cursor-pointer bg-transparent border-2 border-[#BAE0F7] text-[#BAE0F7] px-12 py-4 text-2xl uppercase tracking-widest hover:bg-[#BAE0F7] hover:text-black transition-all duration-300"
+            className="group cursor-pointer bg-transparent border-2 border-[#BAE0F7] text-[#BAE0F7] px-12 py-6 hover:bg-[#BAE0F7] hover:text-black transition-all duration-300 flex flex-col items-center"
             style={{ fontFamily: 'tablet-gothic, sans-serif' }}
           >
-            Let&apos;s Begin
+            <span className="text-3xl uppercase tracking-widest">Wake Up and Climb</span>
+            <span className="text-sm uppercase tracking-wider mt-2 opacity-60">Let&apos;s Begin</span>
           </button>
         </motion.div>
       </div>
