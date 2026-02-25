@@ -220,14 +220,15 @@ data/
 6. Wire up `selectNextStory()` engine with segment context
 7. **Test:** Ticker shows real stats, rotates through tiers, boosts current segment stories
 
-### Session 4: Greatest Hits & Auth Reward
+### Session 4: Greatest Hits & Auth Reward ✅
 **Goal:** User authenticates → immediately sees their personal highlight reel.
 
-1. After sync completes, run `generateGreatestHits()` → store in `greatest_hits` table
-2. Build `GreatestHitsCard.tsx` component — broadcast-style reveal of 3-5 top hits
-3. Wire into sequence: Greatest Hits card plays immediately after auth before returning to leaderboard rotation
+1. ~~After sync completes, run `generateGreatestHits()` → store in `greatest_hits` table~~
+   **Updated:** Greatest hits now generated lazily via `/api/greatest-hits/me` to avoid Vercel timeout
+2. Build `GreatestHitsReveal.tsx` component — broadcast-style reveal of 3-5 top hits ✅
+3. Wire into sequence: Highlights reveal plays immediately after sync before broadcast ✅
 4. Cross-reference with weather data for Tier 2 hits (rain rides, cold rides, etc.)
-5. **Test:** Auth → sync → Greatest Hits card appears with personalized stats
+5. **Test:** Auth → sync → Highlights reveal appears with personalized stats
 
 ### Session 5: Ghost/Verified Visual States
 **Goal:** Leaderboard rows look different based on ghost/claimed/verified status.

@@ -37,9 +37,9 @@ User clicks "Connect with Strava"
     2. Fetch activity history (paginated, up to 900 rides)
     3. Store in segment_efforts + activities tables
     4. Match best times → create verified leaderboard entries
-    5. Generate Greatest Hits (personal superlatives)
-    6. Mark sync complete
-  → User sees their Greatest Hits reveal
+    5. Mark sync complete
+  → Greatest Hits generated lazily (on first /api/greatest-hits/me call)
+  → User sees their Highlights reveal
   → Broadcast starts with verified-only leaderboards
 ```
 
@@ -323,6 +323,9 @@ DevTools → Application → Cookies → look for `mc_session`
 ### Auth/Session Issues
 - **Cookie not persisting**: Fixed by setting cookie on `NextResponse` object instead of using `cookies().set()` (required for App Router redirects)
 - **Auth loop (Strava → splash → Strava)**: New users with `sync_status='pending'` now go directly to welcome screen, not back to splash
+
+### Sync/Performance Issues
+- **Sync timeout on Vercel**: With large activity counts (700+), sync was timing out during greatest hits generation. Fixed by lazy-loading greatest hits - they're now generated on-demand when `/api/greatest-hits/me` is called, not during sync
 
 ### Visual Issues
 - **Skip button flickering**: Moved outside AnimatePresence for stable positioning during card transitions
