@@ -20,7 +20,7 @@ import {
 } from '@/lib/strava';
 import { createServerSupabaseClient, updateUserTokens } from '@/lib/supabase';
 import { processUserEfforts, calculateRanks } from '@/lib/leaderboard';
-import { generateGreatestHits } from '@/lib/greatest-hits';
+// Greatest hits are now generated lazily via /api/greatest-hits/me
 
 // Segment ID to slug mapping
 const SEGMENT_ID_TO_SLUG: Record<number, string> = {
@@ -514,12 +514,12 @@ export async function runUserSync(
   // -------------------------------------------------------------------------
   console.log('[Sync] Updating user stats...');
 
-  // Update progress: generating greatest hits
+  // Update progress: finishing up
   await updateSyncProgress(supabase, user.id, {
-    step: 'greatest_hits',
+    step: 'complete',
     activities_found: totalRides,
     total_distance: Math.round(totalDistance).toLocaleString(),
-    message: 'Generating your greatest hits...',
+    message: 'Finishing up...',
   });
 
   // Store user stats (but don't mark complete yet - greatest hits still pending)
@@ -654,88 +654,9 @@ export async function runUserSync(
   }
 
   // -------------------------------------------------------------------------
-  // Step 6: Generate Greatest Hits
+  // Step 6: Greatest Hits (skipped - now generated lazily on first request)
   // -------------------------------------------------------------------------
-  console.log('[Sync] Generating greatest hits...');
-
-  try {
-    // Fetch activities from database
-    const { data: userActivities } = await supabase
-      .from('activities')
-      .select('strava_activity_id, name, distance_mi, moving_time_seconds, total_elevation_gain_ft, start_date_local, average_speed_mph, average_watts')
-      .eq('user_id', user.id);
-
-    // Fetch segment efforts from database
-    const { data: userEfforts } = await supabase
-      .from('segment_efforts')
-      .select('segment_id, elapsed_time, start_date, pr_rank')
-      .eq('user_id', user.id);
-
-    if (userActivities && userEfforts) {
-      // Format data for greatest hits generator
-      const activitiesData = {
-        activities: userActivities.map(a => ({
-          strava_activity_id: a.strava_activity_id,
-          name: a.name,
-          distance_mi: a.distance_mi,
-          moving_time_seconds: a.moving_time_seconds,
-          total_elevation_gain_ft: a.total_elevation_gain_ft,
-          start_date_local: a.start_date_local,
-          average_speed_mph: a.average_speed_mph,
-          average_watts: a.average_watts,
-        })),
-      };
-
-      const effortsData = {
-        efforts: userEfforts.map(e => ({
-          segment_id: e.segment_id,
-          segment_name: SEGMENT_NAMES[e.segment_id] || e.segment_id,
-          elapsed_time: e.elapsed_time,
-          start_date: e.start_date,
-          pr_rank: e.pr_rank,
-        })),
-      };
-
-      // Generate hits (no weather data for now)
-      const hits = generateGreatestHits(user.name, activitiesData, effortsData, [], null);
-
-      console.log('[Sync] Generated', hits.length, 'greatest hits');
-
-      // Delete existing hits for this user
-      await supabase
-        .from('greatest_hits')
-        .delete()
-        .eq('user_id', user.id);
-
-      // Insert new hits
-      if (hits.length > 0) {
-        const hitsToInsert = hits.map(hit => ({
-          user_id: user.id,
-          category: hit.category,
-          title: hit.title,
-          description: hit.description,
-          stat_value: hit.stat_value,
-          stat_label: hit.stat_label,
-          segment_id: hit.segment_id,
-          activity_strava_id: hit.activity_strava_id,
-          rank_in_club: hit.rank_in_club,
-          percentile: hit.percentile,
-        }));
-
-        const { error: insertError } = await supabase
-          .from('greatest_hits')
-          .insert(hitsToInsert);
-
-        if (insertError) {
-          console.error('[Sync] Failed to insert greatest hits:', insertError);
-        } else {
-          console.log('[Sync] Inserted', hits.length, 'greatest hits');
-        }
-      }
-    }
-  } catch (err) {
-    console.error('[Sync] Greatest hits generation failed (non-fatal):', err);
-  }
+  console.log('[Sync] Skipping greatest hits generation (lazy loading enabled)');
 
   // -------------------------------------------------------------------------
   // Step 7: Mark sync complete
