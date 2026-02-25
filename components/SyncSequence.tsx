@@ -233,7 +233,7 @@ export default function SyncSequence({ user, onComplete }: SyncSequenceProps) {
       <div className="absolute inset-0 z-0">
         <PhotoPile
           photos={archivalPhotos}
-          interval={6000}
+          interval={10000}
           overlayOpacity={0.88}
         />
       </div>

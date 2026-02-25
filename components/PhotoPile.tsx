@@ -111,7 +111,7 @@ export default function PhotoPile({
               style={{
                 zIndex: photo.zIndex,
                 // Photo container - larger size
-                width: `${22 * photo.scale}vw`,
+                width: `${26 * photo.scale}vw`,
                 maxWidth: '400px',
                 minWidth: '150px',
               }}
