@@ -325,6 +325,19 @@ data/
 
 ---
 
+## UI Polish (Next Session)
+
+### Sync Sequence Improvements
+- [ ] **Remove scan lines** — Remove the CRT scan line effect from the sync sequence for cleaner look
+- [ ] **Slow archival photo frequency** — Photos are appearing too rapidly; increase interval between photo transitions
+- [ ] **More feedback during "Generating your highlights"** — Add rotating text messages or progress indicators so it doesn't feel frozen:
+  - "Crunching the numbers..."
+  - "Finding your best efforts..."
+  - "Comparing against the field..."
+  - "Almost there..."
+
+---
+
 ## Future Features
 
 ### Club Membership Gating
