@@ -121,8 +121,8 @@ public/
 - Real-time messages: "Scanning Hawk Hill..." → "47 attempts. Best: 7:42"
 - Date range and total distance display
 
-### 4. Greatest Hits Reveal
-- "YOUR GREATEST HITS" title (2.5s)
+### 4. Your Highlights Reveal
+- "YOUR HIGHLIGHTS" title (2.5s)
 - 3-5 personalized stat cards (4.5s each)
 - Skip button available: `[skip]`
 - Cards show title, big stat value, description
@@ -266,14 +266,71 @@ Key tables:
 - `CC_SESSION_ONBOARDING.md` — Onboarding implementation details
 - `CONTENT_PLAN.md` — Interstitials, club lore, asset inventory
 
+## Vercel Deployment
+
+All these environment variables must be set in Vercel Dashboard → Settings → Environment Variables:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only) |
+| `STRAVA_CLIENT_ID` | Strava API app client ID |
+| `STRAVA_CLIENT_SECRET` | Strava API app secret |
+| `NEXT_PUBLIC_BASE_URL` | Production URL (https://missioncyclingorg.vercel.app) |
+| `NEXT_PUBLIC_GATE_MODE` | Set to `gated` to require Strava auth |
+
+**Strava API Settings** (https://www.strava.com/settings/api):
+- Authorization Callback Domain: `missioncyclingorg.vercel.app`
+
 ## Known Issues
 
 - Videos must be web-compressed (<100MB) for GitHub
 - Browser autoplay policy blocks audio until user interaction
 - Some segment Strava IDs are TBD (Four Corners, BoFax, Bourg d'Oisans)
+- Stale cookies after clearing user data cause auth loops (clear cookies to fix)
+
+## Debugging
+
+### Clear user data for fresh test
+Run in Supabase SQL Editor (replace strava_id with actual ID):
+```sql
+DELETE FROM leaderboard_entries WHERE user_id = (SELECT id FROM users WHERE strava_id = 1205);
+DELETE FROM greatest_hits WHERE user_id = (SELECT id FROM users WHERE strava_id = 1205);
+DELETE FROM segment_efforts WHERE user_id = (SELECT id FROM users WHERE strava_id = 1205);
+DELETE FROM activities WHERE user_id = (SELECT id FROM users WHERE strava_id = 1205);
+DELETE FROM athlete_koms WHERE user_id = (SELECT id FROM users WHERE strava_id = 1205);
+DELETE FROM users WHERE strava_id = 1205;
+```
+Then clear browser cookies or use incognito.
+
+### Test API endpoints
+```javascript
+// In browser console on the site
+fetch('/api/user/me').then(r => r.json()).then(console.log)
+```
+
+### Check session cookie
+DevTools → Application → Cookies → look for `mc_session`
+
+## Recent Fixes (Feb 24, 2026)
+
+### Audio Issues
+- **Highlights audio not playing**: Audio element now renders in all app states so ref is always available
+- **Audio stopping during transitions**: GreatestHitsReveal only fades out audio if it owns it (not when using external ref)
+- **Audio continuing through states**: Highlights audio continues through broadcast_intro, fades out when entering broadcast
+
+### Auth/Session Issues
+- **Cookie not persisting**: Fixed by setting cookie on `NextResponse` object instead of using `cookies().set()` (required for App Router redirects)
+- **Auth loop (Strava → splash → Strava)**: New users with `sync_status='pending'` now go directly to welcome screen, not back to splash
+
+### Visual Issues
+- **Skip button flickering**: Moved outside AnimatePresence for stable positioning during card transitions
+- **Content showing through fadeout**: Added z-index to highlights overlay
 
 ## Future Work
 
+- [ ] Club membership gating (restrict to MC Strava club members, ID: 15)
 - [ ] Weather data integration (Tier 2 stats)
 - [ ] Find Me view (show user's rank + surrounding riders)
 - [ ] Club intro sequence (first-time cinematic)
@@ -283,4 +340,4 @@ Key tables:
 
 ---
 
-*Last updated: February 22, 2026*
+*Last updated: February 24, 2026*
