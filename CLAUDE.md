@@ -331,6 +331,14 @@ DevTools → Application → Cookies → look for `mc_session`
 - **Skip button flickering**: Moved outside AnimatePresence for stable positioning during card transitions
 - **Content showing through fadeout**: Added z-index to highlights overlay
 
+## Supabase Security Hardening (Feb 25, 2026)
+
+Resolved all 3 errors and 8 warnings from Supabase Security Advisor:
+
+- **RLS enabled** on `segments`, `sponsors`, `sync_log` — segments/sponsors get public SELECT policy, sync_log has no anon access (service role only)
+- **Function search_path set** on `recalculate_ranks`, `get_user_rank`, `get_surrounding_riders`
+- **Overly permissive RLS policies replaced** on `athlete_koms` and `weather_daily` — dropped "always true" INSERT/UPDATE/DELETE policies, replaced with single SELECT-only policy. Service role bypasses RLS for writes.
+
 ## Future Work
 
 - [ ] Club membership gating (restrict to MC Strava club members, ID: 15)
@@ -343,4 +351,4 @@ DevTools → Application → Cookies → look for `mc_session`
 
 ---
 
-*Last updated: February 24, 2026*
+*Last updated: February 25, 2026*
